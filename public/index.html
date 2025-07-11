@@ -55,12 +55,12 @@
 
   <input id="cookie" type="text" placeholder="🔑 Security Cookie">
   <input id="groupId" type="number" placeholder="👥 Group ID">
-  <button onclick="fetchRoles()">📥 Hent roller</button>
+  <button onclick="fetchRoles()">📥 Fetch 'get ranks'</button>
 
   <select id="currentRankId" style="display:none;"></select>
   <select id="newRankId" style="display:none;"></select>
 
-  <button onclick="startRevert()">🚀 Start Revert</button>
+  <button onclick="startRevert()">🚀 Start the revertion</button>
 
   <div id="log" class="log"></div>
 
@@ -68,14 +68,14 @@
     async function fetchRoles() {
       const groupId = document.getElementById('groupId').value.trim();
       const log = document.getElementById('log');
-      log.textContent = '⏳ Henter roller...';
+      log.textContent = '⏳ Getting ranks...';
 
       try {
         const res = await fetch(`/roles?groupId=${groupId}`);
         const data = await res.json();
 
         if (!Array.isArray(data)) {
-          log.textContent = '❌ Klarte ikke hente roller.';
+          log.textContent = '❌ I failed to get the roles.';
           return;
         }
 
@@ -84,8 +84,8 @@
 
         currentSelect.style.display = 'block';
         newSelect.style.display = 'block';
-        currentSelect.innerHTML = '<option disabled selected>🎯 Velg nåværende rank</option>';
-        newSelect.innerHTML = '<option disabled selected>↩️ Velg ny rank</option>';
+        currentSelect.innerHTML = '<option disabled selected>🎯 Pick current rank to change from</option>';
+        newSelect.innerHTML = '<option disabled selected>↩️ Pick the new rank to change to</option>';
 
         for (const role of data) {
           const opt1 = document.createElement('option');
@@ -96,9 +96,9 @@
           newSelect.appendChild(opt2);
         }
 
-        log.textContent = '✅ Roller hentet!';
+        log.textContent = '✅ Ranks delivered!';
       } catch (err) {
-        log.textContent = `💀 Klarte ikke hente: ${err.message}`;
+        log.textContent = `💀 Failed to get: ${err.message}`;
       }
     }
 
@@ -109,10 +109,10 @@
       const currentRankId = parseInt(document.getElementById('currentRankId').value);
       const newRankId = parseInt(document.getElementById('newRankId').value);
 
-      log.textContent = '⏳ Reverterer...';
+      log.textContent = '⏳ Reverting...';
 
       if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
-        log.textContent = '⚠️ Fyll ut alt riktig først.';
+        log.textContent = '⚠️ Please fill out this correctly first.';
         return;
       }
 
@@ -125,12 +125,12 @@
 
         const data = await res.json();
         if (data.success) {
-          log.textContent = `✅ Revertert ${data.count} brukere\n\n` + (data.logs?.join('\n') || '');
+          log.textContent = `✅ Reverted ${data.count} brukere\n\n` + (data.logs?.join('\n') || '');
         } else {
-          log.textContent = `❌ Feil: ${data.error}`;
+          log.textContent = `❌ Failed: ${data.error}`;
         }
       } catch (err) {
-        log.textContent = `💥 Klarte ikke kontakte backend: ${err.message}`;
+        log.textContent = `💥 Could not contact the backend: ${err.message}`;
       }
     }
   </script>
