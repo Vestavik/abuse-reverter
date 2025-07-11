@@ -3,13 +3,13 @@ const noblox = require('noblox.js');
 const app = express();
 const port = 3000;
 
-app.use(express.static('public')); // Der index.html ligger
+app.use(express.static('public'));
 app.use(express.json());
 
-// Hent roller fra groupId
+
 app.get('/roles', async (req, res) => {
   const groupId = parseInt(req.query.groupId);
-  if (!groupId) return res.status(400).json({ error: 'Mangler groupId' });
+  if (!groupId) return res.status(400).json({ error: 'Missing groupId' });
 
   try {
     const roles = await noblox.getRoles(groupId);
@@ -19,11 +19,11 @@ app.get('/roles', async (req, res) => {
   }
 });
 
-// Revert ranks
+
 app.post('/revert', async (req, res) => {
   const { cookie, groupId, currentRankId, newRankId } = req.body;
   if (!cookie || !groupId || !currentRankId || !newRankId)
-    return res.status(400).json({ error: 'Mangler data' });
+    return res.status(400).json({ error: 'Missing data' });
 
   try {
     await noblox.setCookie(cookie);
@@ -48,5 +48,5 @@ app.post('/revert', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🔥 Server kjører på http://localhost:${port}`);
+  console.log(`🔥 The server is running on http://localhost:${port}`);
 });
