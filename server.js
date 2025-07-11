@@ -6,7 +6,7 @@ const port = 3000;
 app.use(express.static('public'));
 app.use(express.json());
 
-// Endpoint to get manageable groups from cookie (cookie in header 'x-cookie')
+// Endpoint to get groups manageable by the cookie user
 app.get('/groups', async (req, res) => {
   const cookie = req.headers['x-cookie'];
   if (!cookie) return res.status(400).json({ error: 'Missing cookie header' });
@@ -14,7 +14,7 @@ app.get('/groups', async (req, res) => {
   try {
     await noblox.setCookie(cookie);
     const groups = await noblox.getGroups();
-    // Filter groups where user role rank >= 255 (can manage roles)
+    // Only groups where user has rank >= 255 (can manage ranks)
     const manageable = groups.filter(g => g.role && g.role.rank >= 255);
     const result = manageable.map(g => ({ id: g.id, name: g.name }));
     res.json(result);
@@ -23,7 +23,7 @@ app.get('/groups', async (req, res) => {
   }
 });
 
-// Endpoint to get roles for a group
+// Endpoint to get roles for a given group
 app.get('/roles', async (req, res) => {
   const groupId = parseInt(req.query.groupId);
   if (!groupId) return res.status(400).json({ error: 'Missing groupId' });
@@ -36,7 +36,7 @@ app.get('/roles', async (req, res) => {
   }
 });
 
-// Endpoint to get users in group by rank
+// Endpoint to get users with a specific rank in a group (for manual rank change)
 app.get('/users', async (req, res) => {
   const groupId = parseInt(req.query.groupId);
   const rankId = parseInt(req.query.rankId);
@@ -44,18 +44,14 @@ app.get('/users', async (req, res) => {
 
   try {
     const users = await noblox.getPlayers(groupId, rankId);
-    const result = users.map(u => ({
-      username: u.username,
-      userId: u.userId,
-      rank: rankId
-    }));
+    const result = users.map(u => ({ username: u.username, userId: u.userId }));
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Revert abuse ranks in bulk
+// Revert abuse endpoint (mass rank change)
 app.post('/revert', async (req, res) => {
   const { cookie, groupId, currentRankId, newRankId } = req.body;
   if (!cookie || !groupId || !currentRankId || !newRankId)
@@ -83,11 +79,10 @@ app.post('/revert', async (req, res) => {
   }
 });
 
-// Manual single user rank change
+// Manual rank change for one user
 app.post('/manual', async (req, res) => {
   const { cookie, groupId, userId, newRank } = req.body;
-  if (!cookie || !groupId || !userId || !newRank)
-    return res.status(400).json({ error: 'Missing data' });
+  if (!cookie || !groupId || !userId || !newRank) return res.status(400).json({ error: 'Missing data' });
 
   try {
     await noblox.setCookie(cookie);
