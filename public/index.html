@@ -1,280 +1,188 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roblox Rank Reverter</title>
-  
-  <!-- Poppins font for clean, modern look -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
-    /* RESET & BASE */
-    *, *::before, *::after {
+    :root {
+      --primary-color: #3b82f6;
+      --background-color: #0f172a;
+      --surface-color: #1e293b;
+      --text-color: #f8fafc;
+      --input-bg: #334155;
+      --input-border: #475569;
+      --input-focus: #3b82f6;
+      --button-bg: #3b82f6;
+      --button-bg-hover: #2563eb;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
-    body, html {
-      margin: 0; padding: 0;
-      height: 100%;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #e0e6f8;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      user-select: none;
-      overflow: hidden;
-      padding: 20px;
-    }
-    
-    /* CONTAINER */
-    .container {
-      background: rgba(255 255 255 / 0.05);
-      border-radius: 32px;
-      padding: 48px 56px;
-      width: 420px;
-      max-width: 95vw;
-      box-shadow: 0 16px 64px rgb(0 0 0 / 0.3);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
-      gap: 30px;
-      transition: background 0.3s ease;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      gap: 1.5rem;
     }
 
-    /* TITLE */
     h1 {
-      font-weight: 700;
-      font-size: 2.5rem;
-      letter-spacing: 0.12em;
-      color: #60a5fa;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--primary-color);
       text-align: center;
-      text-shadow: 0 0 10px #3b82f6;
-      user-select: text;
+      margin-bottom: 1rem;
     }
 
-    /* INPUTS & SELECT */
-    input, select {
-      background: rgba(255 255 255 / 0.1);
-      border: none;
+    input, select, button {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.8rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--input-border);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      font-size: 1rem;
       outline: none;
-      border-radius: 16px;
-      padding: 16px 24px;
-      font-size: 1.1rem;
-      color: #e0e6f8;
-      transition: box-shadow 0.3s ease, background-color 0.3s ease;
-      box-shadow:
-        inset 4px 4px 6px rgb(0 0 0 / 0.4),
-        inset -4px -4px 6px rgb(255 255 255 / 0.1);
-      cursor: pointer;
-      user-select: text;
-    }
-
-    input::placeholder {
-      color: #94a3b8;
-      font-weight: 500;
+      transition: all 0.3s ease;
     }
 
     input:focus, select:focus {
-      background: rgba(255 255 255 / 0.15);
-      box-shadow:
-        0 0 12px #60a5fa,
-        inset 4px 4px 6px rgb(0 0 0 / 0.6),
-        inset -4px -4px 6px rgb(255 255 255 / 0.15);
-      color: #f8fafc;
+      border-color: var(--input-focus);
     }
 
-    select {
-      cursor: pointer;
-    }
-
-    /* BUTTONS */
     button {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      background-color: var(--button-bg);
       border: none;
-      border-radius: 24px;
-      padding: 18px 36px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: white;
       cursor: pointer;
-      box-shadow:
-        0 8px 15px rgb(59 130 246 / 0.6);
-      transition: box-shadow 0.3s ease, transform 0.15s ease;
-      user-select: none;
-      filter: drop-shadow(0 2px 2px rgb(37 99 235 / 0.7));
+      font-weight: 500;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
-      box-shadow:
-        0 12px 24px rgb(37 99 235 / 0.9);
-      transform: translateY(-2px);
+      background-color: var(--button-bg-hover);
     }
 
-    button:active {
-      transform: translateY(1px);
-      box-shadow:
-        0 4px 8px rgb(37 99 235 / 0.5);
-    }
-
-    /* LOG AREA */
-    #log {
-      background: rgba(255 255 255 / 0.1);
-      border-radius: 24px;
-      padding: 20px;
-      font-family: 'Fira Mono', monospace, monospace;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      color: #a1aebf;
-      min-height: 140px;
-      max-height: 200px;
-      overflow-y: auto;
-      user-select: text;
-      box-shadow:
-        inset 2px 2px 8px rgb(0 0 0 / 0.6),
-        inset -2px -2px 8px rgb(255 255 255 / 0.1);
-    }
-
-    /* HIDE SELECTS INITIALLY */
     select {
       display: none;
     }
 
-    /* SHOW SELECT WHEN ACTIVE */
-    select.active {
-      display: block;
+    .log {
+      width: 100%;
+      max-width: 600px;
+      background-color: var(--surface-color);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      box-shadow: 0 4px 6px var(--shadow);
     }
 
-    /* SCROLLBAR FOR LOG */
-    #log::-webkit-scrollbar {
-      width: 8px;
+    .hidden {
+      display: none;
     }
-    #log::-webkit-scrollbar-track {
-      background: rgba(255 255 255 / 0.05);
-      border-radius: 12px;
-    }
-    #log::-webkit-scrollbar-thumb {
-      background: #2563eb;
-      border-radius: 12px;
+
+    .visible {
+      display: block;
     }
   </style>
 </head>
 <body>
-  <main class="container" role="main" aria-label="Roblox Rank Reverter">
-    <h1>🔁 Roblox Rank Reverter</h1>
+  <h1>🔁 Roblox Rank Reverter</h1>
 
-    <input
-      id="cookie"
-      type="text"
-      autocomplete="off"
-      spellcheck="false"
-      placeholder="🔑 Security Cookie"
-      aria-label="Security Cookie"
-    />
+  <input id="cookie" type="text" placeholder="🔑 Security Cookie" />
+  <input id="groupId" type="number" placeholder="👥 Group ID" />
+  <button onclick="fetchRoles()">📥 Fetch Roles</button>
 
-    <input
-      id="groupId"
-      type="number"
-      placeholder="👥 Group ID"
-      aria-label="Group ID"
-      min="1"
-      step="1"
-    />
+  <select id="currentRankId" class="hidden"></select>
+  <select id="newRankId" class="hidden"></select>
 
-    <select id="currentRankId" aria-label="Current Rank"></select>
-    <select id="newRankId" aria-label="New Rank"></select>
+  <button onclick="startRevert()">🚀 Start Revert</button>
 
-    <button id="fetchBtn" type="button" aria-live="polite">📥 Fetch ranks</button>
-    <button id="revertBtn" type="button" aria-live="polite">🚀 Start revert</button>
-
-    <pre id="log" aria-live="polite" role="log" aria-atomic="true"></pre>
-  </main>
+  <div id="log" class="log"></div>
 
   <script>
-    const fetchBtn = document.getElementById('fetchBtn');
-    const revertBtn = document.getElementById('revertBtn');
-    const log = document.getElementById('log');
-    const currentSelect = document.getElementById('currentRankId');
-    const newSelect = document.getElementById('newRankId');
-
-    function showLog(msg) {
-      log.textContent = msg;
-      log.scrollTop = log.scrollHeight;
-    }
-
     async function fetchRoles() {
       const groupId = document.getElementById('groupId').value.trim();
-      if (!groupId) return showLog('⚠️ Please enter a valid Group ID');
-
-      showLog('⏳ Fetching ranks...');
-      currentSelect.classList.remove('active');
-      newSelect.classList.remove('active');
-      currentSelect.innerHTML = '';
-      newSelect.innerHTML = '';
+      const log = document.getElementById('log');
+      log.textContent = '⏳ Fetching roles...';
 
       try {
         const res = await fetch(`/roles?groupId=${groupId}`);
         const data = await res.json();
 
-        if (!Array.isArray(data)) throw new Error('Invalid data');
+        if (!Array.isArray(data)) {
+          log.textContent = '❌ Failed to fetch roles.';
+          return;
+        }
 
-        currentSelect.classList.add('active');
-        newSelect.classList.add('active');
+        const currentSelect = document.getElementById('currentRankId');
+        const newSelect = document.getElementById('newRankId');
 
-        currentSelect.innerHTML = '<option disabled selected>🎯 Current rank</option>';
-        newSelect.innerHTML = '<option disabled selected>↩️ New rank</option>';
+        currentSelect.classList.remove('hidden');
+        newSelect.classList.remove('hidden');
+        currentSelect.innerHTML = '<option disabled selected>🎯 Select current rank</option>';
+        newSelect.innerHTML = '<option disabled selected>↩️ Select new rank</option>';
 
-        data.forEach((role) => {
-          const opt1 = document.createElement('option');
-          opt1.value = role.id;
-          opt1.textContent = `(${role.rank}) ${role.name}`;
-          const opt2 = opt1.cloneNode(true);
-          currentSelect.appendChild(opt1);
-          newSelect.appendChild(opt2);
+        data.forEach(role => {
+          const option = document.createElement('option');
+          option.value = role.id;
+          option.textContent = `(${role.rank}) ${role.name}`;
+          currentSelect.appendChild(option);
+          newSelect.appendChild(option.cloneNode(true));
         });
 
-        showLog('✅ Ranks fetched! Pick the ranks and start revert.');
+        log.textContent = '✅ Roles fetched successfully!';
       } catch (err) {
-        showLog(`💀 Error fetching ranks: ${err.message}`);
+        log.textContent = `💀 Error: ${err.message}`;
       }
     }
 
     async function startRevert() {
+      const log = document.getElementById('log');
       const cookie = document.getElementById('cookie').value.trim();
       const groupId = parseInt(document.getElementById('groupId').value);
-      const currentRankId = parseInt(currentSelect.value);
-      const newRankId = parseInt(newSelect.value);
+      const currentRankId = parseInt(document.getElementById('currentRankId').value);
+      const newRankId = parseInt(document.getElementById('newRankId').value);
 
-      if (!cookie || !groupId || !currentRankId || !newRankId) {
-        return showLog('⚠️ Please fill all fields correctly!');
+      log.textContent = '⏳ Reverting...';
+
+      if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
+        log.textContent = '⚠️ Please fill out all fields correctly.';
+        return;
       }
-
-      showLog('⏳ Reverting ranks...');
 
       try {
         const res = await fetch('/revert', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cookie, groupId, currentRankId, newRankId }),
+          body: JSON.stringify({ cookie, groupId, currentRankId, newRankId })
         });
-        const data = await res.json();
 
+        const data = await res.json();
         if (data.success) {
-          showLog(`✅ Reverted ${data.count} users\n\n${(data.logs || []).join('\n')}`);
+          log.textContent = `✅ Reverted ${data.count} users\n\n${data.logs.join('\n')}`;
         } else {
-          showLog(`❌ Failed: ${data.error}`);
+          log.textContent = `❌ Error: ${data.error}`;
         }
       } catch (err) {
-        showLog(`💥 Backend unreachable: ${err.message}`);
+        log.textContent = `💥 Backend error: ${err.message}`;
       }
     }
-
-    fetchBtn.addEventListener('click', fetchRoles);
-    revertBtn.addEventListener('click', startRevert);
   </script>
 </body>
 </html>
