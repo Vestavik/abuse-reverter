@@ -4,106 +4,156 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Roblox Rank Manager</title>
-  <script defer src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col items-center p-6">
+<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col items-center p-6 font-sans">
 
-  <h1 class="text-3xl font-bold mb-8">Roblox Rank Manager</h1>
+  <h1 class="text-4xl font-extrabold mb-12 text-indigo-500 drop-shadow-lg">Roblox Rank Manager</h1>
 
   <!-- Step 1: Enter Cookie -->
-  <div id="cookieStep" class="w-full max-w-lg space-y-4">
-    <label class="block font-semibold text-lg">🔑 Enter your .ROBLOSECURITY cookie</label>
+  <section id="cookieStep" class="w-full max-w-xl space-y-4">
+    <label class="block text-lg font-semibold">🔑 Enter your <code>.ROBLOSECURITY</code> cookie</label>
     <input
       id="cookieInput"
       type="password"
-      class="w-full p-3 rounded-xl border border-gray-700 bg-gray-800"
       placeholder="Paste your Roblox security cookie here"
+      class="w-full rounded-xl border border-gray-700 bg-gray-800 p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
     />
     <button
       id="btnFetchGroups"
-      class="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 font-semibold transition disabled:opacity-50"
       disabled
+      class="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 font-semibold transition disabled:opacity-50"
     >
       Fetch Groups
     </button>
-    <p id="cookieError" class="text-red-500"></p>
-  </div>
+    <p id="cookieError" class="text-red-500 font-semibold"></p>
+  </section>
 
   <!-- Step 2: Select Group -->
-  <div id="groupStep" class="hidden w-full max-w-lg space-y-4">
-    <label class="block font-semibold text-lg">👥 Select a group you manage</label>
-    <select id="groupSelect" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"></select>
+  <section id="groupStep" class="hidden w-full max-w-xl space-y-4 mt-10">
+    <label class="block text-lg font-semibold">👥 Select a group you manage</label>
+    <select
+      id="groupSelect"
+      class="w-full rounded-xl bg-gray-800 border border-gray-700 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+    ></select>
     <button
       id="btnFetchRoles"
-      class="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 font-semibold transition"
       disabled
+      class="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 font-semibold transition disabled:opacity-50"
     >
       Fetch Roles
     </button>
-    <p id="groupError" class="text-red-500"></p>
-  </div>
+    <p id="groupError" class="text-red-500 font-semibold"></p>
+  </section>
 
   <!-- Step 3: Select Mode -->
-  <div id="modeStep" class="hidden w-full max-w-lg space-y-4">
-    <label class="block font-semibold text-lg">⚙️ Choose mode</label>
-    <div class="flex space-x-4">
-      <button id="modeRevert" class="flex-1 bg-blue-600 hover:bg-blue-700 rounded-xl p-3 font-semibold transition">
+  <section id="modeStep" class="hidden w-full max-w-xl space-y-4 mt-10">
+    <label class="block text-lg font-semibold">⚙️ Choose mode</label>
+    <div class="flex gap-4">
+      <button
+        id="modeRevert"
+        class="flex-1 bg-blue-600 hover:bg-blue-700 rounded-xl p-3 font-semibold transition"
+      >
         Revert Abuse
       </button>
-      <button id="modeManual" class="flex-1 bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition">
+      <button
+        id="modeManual"
+        class="flex-1 bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition"
+      >
         Manual Rank Change
       </button>
     </div>
-  </div>
+  </section>
 
   <!-- Step 4A: Revert Abuse -->
-  <div id="revertStep" class="hidden w-full max-w-lg space-y-4">
+  <section
+    id="revertStep"
+    class="hidden w-full max-w-xl space-y-4 mt-10 bg-gray-800 p-6 rounded-xl shadow-lg"
+  >
+    <label class="block text-lg font-semibold">🎯 Select current rank</label>
+    <select
+      id="currentRankRevert"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+    ></select>
 
-    <label class="block font-semibold text-lg">🎯 Select current rank</label>
-    <select id="currentRankRevert" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"></select>
+    <label class="block text-lg font-semibold">↩️ Select new rank</label>
+    <select
+      id="newRankRevert"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+    ></select>
 
-    <label class="block font-semibold text-lg">↩️ Select new rank</label>
-    <select id="newRankRevert" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"></select>
-
-    <button id="btnStartRevert" class="w-full bg-blue-600 hover:bg-blue-700 rounded-xl p-3 font-semibold transition">
+    <button
+      id="btnStartRevert"
+      class="w-full bg-blue-600 hover:bg-blue-700 rounded-xl p-3 font-semibold transition"
+    >
       🚀 Start Revert
     </button>
 
-    <pre id="logRevert" class="bg-gray-800 rounded-xl p-4 text-sm max-h-48 overflow-y-auto"></pre>
-  </div>
+    <pre
+      id="logRevert"
+      class="bg-gray-900 rounded-xl p-4 text-sm max-h-48 overflow-y-auto text-indigo-400 font-mono"
+    ></pre>
+  </section>
 
   <!-- Step 4B: Manual Rank Change -->
-  <div id="manualStep" class="hidden w-full max-w-lg space-y-4">
+  <section
+    id="manualStep"
+    class="hidden w-full max-w-xl space-y-4 mt-10 bg-gray-800 p-6 rounded-xl shadow-lg"
+  >
+    <label class="block text-lg font-semibold">🎯 Select rank to list users</label>
+    <select
+      id="currentRankManual"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+    ></select>
 
-    <label class="block font-semibold text-lg">🎯 Select rank to list users</label>
-    <select id="currentRankManual" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"></select>
-    <button id="btnFetchUsers" class="w-full bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition">
+    <button
+      id="btnFetchUsers"
+      class="w-full bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition disabled:opacity-50"
+      disabled
+    >
       Fetch Users
     </button>
 
-    <label class="block font-semibold text-lg">Search users by username or ID</label>
+    <label class="block text-lg font-semibold">Search users by username or ID</label>
     <input
       id="searchUserInput"
       type="text"
       placeholder="Search users..."
-      class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
       disabled
     />
 
-    <label class="block font-semibold text-lg">Select a user</label>
-    <select id="userSelect" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700" disabled></select>
+    <label class="block text-lg font-semibold">Select a user</label>
+    <select
+      id="userSelect"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200"
+      disabled
+    ></select>
 
-    <label class="block font-semibold text-lg">↩️ Select new rank</label>
-    <select id="newRankManual" class="w-full p-3 rounded-xl bg-gray-800 border border-gray-700"></select>
+    <label class="block text-lg font-semibold">↩️ Select new rank</label>
+    <select
+      id="newRankManual"
+      class="w-full rounded-xl bg-gray-900 border border-gray-700 p-3 text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+    ></select>
 
-    <button id="btnChangeRank" class="w-full bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition" disabled>
+    <button
+      id="btnChangeRank"
+      class="w-full bg-green-600 hover:bg-green-700 rounded-xl p-3 font-semibold transition disabled:opacity-50"
+      disabled
+    >
       🚀 Change Rank
     </button>
 
-    <pre id="logManual" class="bg-gray-800 rounded-xl p-4 text-sm max-h-48 overflow-y-auto"></pre>
-  </div>
+    <pre
+      id="logManual"
+      class="bg-gray-900 rounded-xl p-4 text-sm max-h-48 overflow-y-auto text-green-400 font-mono"
+    ></pre>
+  </section>
 
   <script>
+    // All the same JS from previous full code here, no changes needed for styling
+
     const cookieInput = document.getElementById('cookieInput');
     const btnFetchGroups = document.getElementById('btnFetchGroups');
     const cookieError = document.getElementById('cookieError');
@@ -130,7 +180,6 @@
     const btnChangeRank = document.getElementById('btnChangeRank');
     const logManual = document.getElementById('logManual');
 
-    // Enable fetch groups button only if cookie input has some value
     cookieInput.addEventListener('input', () => {
       btnFetchGroups.disabled = !cookieInput.value.trim();
       cookieError.textContent = '';
@@ -152,7 +201,6 @@
           return;
         }
 
-        // Populate group select
         groupSelect.innerHTML = '';
         groups.forEach(g => {
           const option = document.createElement('option');
@@ -161,7 +209,6 @@
           groupSelect.appendChild(option);
         });
 
-        // Show next step
         groupStep.classList.remove('hidden');
         modeStep.classList.remove('hidden');
         btnFetchRoles.disabled = false;
@@ -186,7 +233,6 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const roles = await res.json();
 
-        // Populate revert ranks
         roles.forEach(role => {
           const opt = document.createElement('option');
           opt.value = role.rank;
@@ -205,7 +251,6 @@
       }
     });
 
-    // Mode selection
     modeRevert.addEventListener('click', () => {
       revertStep.classList.remove('hidden');
       manualStep.classList.add('hidden');
@@ -215,7 +260,6 @@
       revertStep.classList.add('hidden');
     });
 
-    // Revert abuse logic
     btnStartRevert.addEventListener('click', async () => {
       logRevert.textContent = '⏳ Reverting ranks...';
       const cookie = cookieInput.value.trim();
@@ -246,7 +290,6 @@
       }
     });
 
-    // Manual rank change logic
     btnFetchUsers.addEventListener('click', async () => {
       logManual.textContent = '⏳ Fetching users...';
       const groupId = groupSelect.value;
@@ -278,7 +321,6 @@
       }
     });
 
-    // Search filter for users
     searchUserInput.addEventListener('input', () => {
       const filter = searchUserInput.value.toLowerCase();
       Array.from(userSelect.options).forEach(option => {
@@ -305,10 +347,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cookie, groupId: Number(groupId), userId: Number(userId), newRank: Number(newRank) })
         });
-
         const data = await res.json();
         if (data.success) {
-          logManual.textContent = `✅ Successfully changed rank for user ${userId}`;
+          logManual.textContent = `✅ Successfully changed rank of user ${userId}!`;
         } else {
           logManual.textContent = `❌ Error: ${data.error}`;
         }
@@ -316,8 +357,6 @@
         logManual.textContent = `💥 Could not contact server: ${err.message}`;
       }
     });
-
   </script>
-
 </body>
 </html>
