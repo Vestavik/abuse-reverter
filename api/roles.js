@@ -1,14 +1,21 @@
-// api/roles.js
-const noblox = require('noblox.js');
+import noblox from 'noblox.js';
 
 export default async function handler(req, res) {
-  const { groupId } = req.query;
-  if (!groupId) return res.status(400).json({ error: 'Missing groupId' });
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const groupId = parseInt(req.query.groupId);
+  if (!groupId) {
+    res.status(400).json({ error: 'Missing groupId parameter' });
+    return;
+  }
 
   try {
-    const roles = await noblox.getRoles(parseInt(groupId));
+    const roles = await noblox.getRoles(groupId);
     res.status(200).json(roles);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to get roles' });
   }
 }
