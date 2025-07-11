@@ -1,18 +1,23 @@
+const express = require('express');
 const noblox = require('noblox.js');
+const router = express.Router();
 
-module.exports = async (req, res) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-  const groupId = parseInt(req.query.groupId);
-  const rankId = parseInt(req.query.rankId);
-  if (!groupId || !rankId) return res.status(400).json({ error: 'Missing groupId or rankId' });
+router.get('/users', async (req, res) => {
+  const { cookie, groupId, rankId } = req.query;
+  if (!cookie) return res.status(400).json({ error: 'Missing cookie' });
+  if (!groupId) return res.status(400).json({ error: 'Missing groupId' });
+  if (!rankId) return res.status(400).json({ error: 'Missing rankId' });
 
   try {
-    const users = await noblox.getPlayers(groupId, rankId);
-    const result = users.map(u => ({ username: u.username, userId: u.userId, rank: rankId }));
-    res.json(result);
+    await noblox.setCookie(cookie);
+    // get users in group at rank
+    const users = await noblox.getPlayers(groupId, parseInt(rankId));
+    // users is array of objects with username, userId etc.
+    res.json(users);
   } catch (err) {
+    console.error('[ERROR] /api/users:', err);
     res.status(500).json({ error: err.message });
   }
-};
+});
+
+module.exports = router;
