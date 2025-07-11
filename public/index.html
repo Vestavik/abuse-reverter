@@ -1,160 +1,167 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Roblox Rank Reverter</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8">
-    <h1 class="text-2xl font-semibold mb-6 text-gray-900">🔁 Roblox Rank Reverter</h1>
-    
-    <div class="space-y-4">
-      <!-- Security Cookie Input -->
-      <div>
-        <label for="cookie" class="block text-gray-700 font-medium mb-1">🔑 Security Cookie</label>
-        <input
-          id="cookie"
-          type="password"
-          placeholder=".ROBLOSECURITY cookie"
-          class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
-          autocomplete="off"
-        />
-      </div>
-      
-      <!-- Group ID Input -->
-      <div>
-        <label for="groupId" class="block text-gray-700 font-medium mb-1">👥 Group ID</label>
-        <input
-          id="groupId"
-          type="number"
-          placeholder="Group ID"
-          class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
-          autocomplete="off"
-        />
-      </div>
-      
-      <!-- Fetch Ranks Button -->
-      <button
-        id="fetchRanksBtn"
-        class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-      >
-        📥 Fetch Group Ranks
-      </button>
-      
-      <!-- Rank Select Menus -->
-      <div class="flex flex-col sm:flex-row sm:space-x-4">
-        <div class="flex-1 mt-4 sm:mt-0">
-          <label for="currentRankId" class="block text-gray-700 font-medium mb-1">🎯 Current Rank</label>
-          <select
-            id="currentRankId"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-          >
-            <option selected disabled>Select current rank</option>
-          </select>
-        </div>
-        <div class="flex-1 mt-4 sm:mt-0">
-          <label for="newRankId" class="block text-gray-700 font-medium mb-1">↩️ New Rank</label>
-          <select
-            id="newRankId"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-          >
-            <option selected disabled>Select new rank</option>
-          </select>
-        </div>
-      </div>
-      
-      <!-- Start Revert Button -->
-      <button
-        id="startRevertBtn"
-        class="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-      >
-        🚀 Start Revert
-      </button>
-    </div>
-    
-    <!-- Log/Output Section -->
-    <div
-      id="logContainer"
-      class="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-32 overflow-y-auto"
-    >
-      <pre id="log" class="text-sm text-gray-700 select-text">Revert logs will appear here...</pre>
-    </div>
-  </div>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Roblox Rank Reverter</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8">
+      <h1 class="text-2xl font-semibold mb-6 text-gray-800">🔁 Roblox Rank Reverter</h1>
 
-  <script>
-    const logEl = document.getElementById('log');
-    const currentRankSelect = document.getElementById('currentRankId');
-    const newRankSelect = document.getElementById('newRankId');
-    const fetchRanksBtn = document.getElementById('fetchRanksBtn');
-    const startRevertBtn = document.getElementById('startRevertBtn');
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-700 font-medium mb-1">🔑 Security Cookie</label>
+          <input
+            id="cookie"
+            type="password"
+            placeholder=".ROBLOSECURITY cookie"
+            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-    fetchRanksBtn.addEventListener('click', async () => {
-      const groupId = document.getElementById('groupId').value.trim();
-      logEl.textContent = '⏳ Getting ranks...';
-      if (!groupId) {
-        logEl.textContent = '⚠️ Please enter a valid Group ID';
-        return;
-      }
-      try {
-        const res = await fetch(`/api/roles?groupId=${groupId}`);
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          logEl.textContent = '❌ Failed to get roles data.';
+        <div>
+          <label class="block text-gray-700 font-medium mb-1">👥 Group ID</label>
+          <input
+            id="groupId"
+            type="number"
+            placeholder="Group ID"
+            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <button
+          onclick="fetchRoles()"
+          class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+        >
+          📥 Fetch Group Ranks
+        </button>
+
+        <div class="flex flex-col sm:flex-row sm:space-x-4">
+          <div class="flex-1 mt-4 sm:mt-0">
+            <label class="block text-gray-700 font-medium mb-1">🎯 Current Rank</label>
+            <select
+              id="currentRankId"
+              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
+            >
+              <option disabled selected>Pick current rank</option>
+            </select>
+          </div>
+
+          <div class="flex-1 mt-4 sm:mt-0">
+            <label class="block text-gray-700 font-medium mb-1">↩️ New Rank</label>
+            <select
+              id="newRankId"
+              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
+            >
+              <option disabled selected>Pick new rank</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          onclick="startRevert()"
+          class="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+        >
+          🚀 Start Revert
+        </button>
+      </div>
+
+      <div
+        id="log"
+        class="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-32 overflow-y-auto text-sm text-gray-700 whitespace-pre-wrap"
+      >
+        Logs will appear here...
+      </div>
+    </div>
+
+    <script>
+      async function fetchRoles() {
+        const groupId = document.getElementById('groupId').value.trim();
+        const log = document.getElementById('log');
+        log.textContent = '⏳ Getting ranks...';
+
+        if (!groupId) {
+          log.textContent = '⚠️ Please enter a group ID first!';
           return;
         }
 
-        currentRankSelect.innerHTML = '<option disabled selected>🎯 Pick current rank to change from</option>';
-        newRankSelect.innerHTML = '<option disabled selected>↩️ Pick the new rank to change to</option>';
+        try {
+          const res = await fetch(`/api/roles?groupId=${groupId}`);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-        data.forEach(role => {
-          const option1 = document.createElement('option');
-          option1.value = role.id;
-          option1.textContent = `(${role.rank}) ${role.name}`;
-          const option2 = option1.cloneNode(true);
+          const data = await res.json();
 
-          currentRankSelect.appendChild(option1);
-          newRankSelect.appendChild(option2);
-        });
+          if (!Array.isArray(data)) {
+            log.textContent = '❌ Failed to get roles: Invalid data format';
+            return;
+          }
 
-        logEl.textContent = '✅ Ranks delivered!';
-      } catch (e) {
-        logEl.textContent = `💀 Failed to get ranks: ${e.message}`;
-      }
-    });
+          const currentSelect = document.getElementById('currentRankId');
+          const newSelect = document.getElementById('newRankId');
 
-    startRevertBtn.addEventListener('click', async () => {
-      const cookie = document.getElementById('cookie').value.trim();
-      const groupId = parseInt(document.getElementById('groupId').value);
-      const currentRankId = parseInt(currentRankSelect.value);
-      const newRankId = parseInt(newRankSelect.value);
+          currentSelect.innerHTML = '<option disabled selected>🎯 Pick current rank</option>';
+          newSelect.innerHTML = '<option disabled selected>↩️ Pick new rank</option>';
 
-      logEl.textContent = '⏳ Reverting...';
+          for (const role of data) {
+            const option1 = document.createElement('option');
+            option1.value = role.id;
+            option1.textContent = `(${role.rank}) ${role.name}`;
+            const option2 = option1.cloneNode(true);
 
-      if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
-        logEl.textContent = '⚠️ Please fill out everything correctly.';
-        return;
-      }
+            currentSelect.appendChild(option1);
+            newSelect.appendChild(option2);
+          }
 
-      try {
-        const res = await fetch('/api/revert', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cookie, groupId, currentRankId, newRankId }),
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          logEl.textContent = `✅ Reverted ${data.count} users\n\n${(data.logs || []).join('\n')}`;
-        } else {
-          logEl.textContent = `❌ Failed: ${data.error}`;
+          log.textContent = '✅ Roles loaded successfully!';
+        } catch (err) {
+          log.textContent = `💀 Failed to get: ${err.message}`;
         }
-      } catch (err) {
-        logEl.textContent = `💥 Could not contact the backend: ${err.message}`;
       }
-    });
-  </script>
-</body>
+
+      async function startRevert() {
+        const log = document.getElementById('log');
+        const cookie = document.getElementById('cookie').value.trim();
+        const groupId = parseInt(document.getElementById('groupId').value);
+        const currentRankId = parseInt(document.getElementById('currentRankId').value);
+        const newRankId = parseInt(document.getElementById('newRankId').value);
+
+        if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
+          log.textContent = '⚠️ Please fill out everything correctly before starting.';
+          return;
+        }
+
+        log.textContent = '⏳ Reverting ranks... Please wait.';
+
+        try {
+          const res = await fetch('/api/revert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cookie, groupId, currentRankId, newRankId }),
+          });
+
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Unknown error');
+          }
+
+          const data = await res.json();
+
+          if (data.success) {
+            log.textContent =
+              `✅ Reverted ${data.count} users successfully!\n\n` +
+              (data.logs?.join('\n') || '');
+          } else {
+            log.textContent = `❌ Failed: ${data.error}`;
+          }
+        } catch (err) {
+          log.textContent = `💥 Could not contact backend: ${err.message}`;
+        }
+      }
+    </script>
+  </body>
 </html>
