@@ -103,7 +103,7 @@
       color: #d1d5db;
     }
     .hidden {
-      display: none;
+      display: none !important;
     }
   </style>
 </head>
@@ -111,29 +111,25 @@
 
   <h1>Roblox Rank Manager</h1>
 
-  <div class="tabs">
-    <div class="tab active" id="tab-revert">Revert Abuse</div>
-    <div class="tab" id="tab-manual">Manual Rank Change</div>
-  </div>
-
-  <!-- COMMON COOKIE INPUT -->
   <label for="cookieInput">🔑 Enter your Security Cookie</label>
   <input type="password" id="cookieInput" placeholder=".ROBLOSECURITY cookie" autocomplete="off" spellcheck="false" />
 
-  <button id="btnFetchGroups" disabled>Fetch Groups</button>
+  <button id="btnFetchGroups" disabled>Fetch Manageable Groups</button>
 
-  <!-- Group selector -->
   <div class="section hidden" id="groupSection">
     <label for="groupSelect">👥 Select Group</label>
     <select id="groupSelect" disabled>
       <option>Loading groups...</option>
     </select>
-
     <button id="btnFetchRanks" disabled>Fetch Ranks</button>
   </div>
 
-  <!-- Revert Abuse Section -->
-  <div class="section" id="revertSection">
+  <div class="tabs hidden" id="tabs">
+    <div class="tab active" id="tab-revert">Revert Abuse</div>
+    <div class="tab" id="tab-manual">Manual Rank Change</div>
+  </div>
+
+  <div class="section hidden" id="revertSection">
     <label for="currentRankRevert">🎯 Current Rank</label>
     <select id="currentRankRevert" disabled>
       <option>Select current rank</option>
@@ -149,7 +145,6 @@
     <div class="log" id="logRevert">Revert logs will appear here...</div>
   </div>
 
-  <!-- Manual Rank Change Section -->
   <div class="section hidden" id="manualSection">
     <label for="currentRankManual">🎯 Select Rank to List Users</label>
     <select id="currentRankManual" disabled>
@@ -177,12 +172,15 @@
   </div>
 
   <script>
-    // Elements
     const cookieInput = document.getElementById('cookieInput');
     const btnFetchGroups = document.getElementById('btnFetchGroups');
     const groupSection = document.getElementById('groupSection');
     const groupSelect = document.getElementById('groupSelect');
     const btnFetchRanks = document.getElementById('btnFetchRanks');
+
+    const tabs = document.getElementById('tabs');
+    const tabRevert = document.getElementById('tab-revert');
+    const tabManual = document.getElementById('tab-manual');
 
     const revertSection = document.getElementById('revertSection');
     const currentRankRevert = document.getElementById('currentRankRevert');
@@ -199,55 +197,27 @@
     const btnChangeManual = document.getElementById('btnChangeManual');
     const logManual = document.getElementById('logManual');
 
-    const tabRevert = document.getElementById('tab-revert');
-    const tabManual = document.getElementById('tab-manual');
-
-    // State
     let groups = [];
     let ranks = [];
     let users = [];
 
-    // Initial states
-    btnFetchGroups.disabled = true;
-    btnFetchRanks.disabled = true;
-    currentRankRevert.disabled = true;
-    newRankRevert.disabled = true;
-    btnStartRevert.disabled = true;
-    currentRankManual.disabled = true;
-    btnFetchUsers.disabled = true;
-    userSearch.disabled = true;
-    userSelect.disabled = true;
-    newRankManual.disabled = true;
-    btnChangeManual.disabled = true;
-
-    // Enable Fetch Groups button only if cookie input not empty
+    // Enable fetch groups only if cookie is not empty
     cookieInput.addEventListener('input', () => {
       btnFetchGroups.disabled = cookieInput.value.trim() === '';
-      resetAfterGroups();
+      resetUI();
     });
 
-    // Tab switching
-    tabRevert.addEventListener('click', () => {
-      tabRevert.classList.add('active');
-      tabManual.classList.remove('active');
-      revertSection.style.display = 'block';
-      manualSection.style.display = 'none';
-    });
-
-    tabManual.addEventListener('click', () => {
-      tabManual.classList.add('active');
-      tabRevert.classList.remove('active');
-      manualSection.style.display = 'block';
-      revertSection.style.display = 'none';
-    });
-
-    // Reset UI parts after groups change
-    function resetAfterGroups() {
+    // Reset UI - hide everything except cookie + fetch groups btn
+    function resetUI() {
       groupSection.classList.add('hidden');
+      tabs.classList.add('hidden');
+      revertSection.classList.add('hidden');
+      manualSection.classList.add('hidden');
+
       groupSelect.innerHTML = '<option>Loading groups...</option>';
+      groupSelect.disabled = true;
       btnFetchRanks.disabled = true;
 
-      // Revert reset
       currentRankRevert.innerHTML = '<option>Select current rank</option>';
       newRankRevert.innerHTML = '<option>Select new rank</option>';
       currentRankRevert.disabled = true;
@@ -255,7 +225,6 @@
       btnStartRevert.disabled = true;
       logRevert.textContent = 'Revert logs will appear here...';
 
-      // Manual reset
       currentRankManual.innerHTML = '<option>Select rank</option>';
       btnFetchUsers.disabled = true;
       userSearch.value = '';
@@ -268,27 +237,26 @@
       logManual.textContent = 'Manual logs will appear here...';
     }
 
-    // Fetch groups button click
     btnFetchGroups.addEventListener('click', async () => {
       const cookie = cookieInput.value.trim();
       if (!cookie) return;
 
       btnFetchGroups.disabled = true;
       btnFetchGroups.textContent = 'Fetching groups...';
-      resetAfterGroups();
+      resetUI();
 
       try {
         const res = await fetch('/groups', {
           headers: { 'x-cookie': cookie }
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         groups = await res.json();
 
         if (!groups.length) {
-          throw new Error('No groups found or no manage permissions.');
+          throw new Error('No groups with manage permissions found');
         }
 
-        // Populate group select
         groupSelect.innerHTML = '<option disabled selected>Select a group</option>';
         groups.forEach(g => {
           const opt = document.createElement('option');
@@ -301,20 +269,18 @@
         groupSelect.disabled = false;
         btnFetchRanks.disabled = false;
 
-        btnFetchGroups.textContent = 'Fetch Groups';
       } catch (err) {
-        btnFetchGroups.textContent = 'Fetch Groups';
         alert('❌ Failed to load groups: ' + err.message);
       } finally {
         btnFetchGroups.disabled = false;
+        btnFetchGroups.textContent = 'Fetch Manageable Groups';
       }
     });
 
-    // Fetch ranks button click
     btnFetchRanks.addEventListener('click', async () => {
       const groupId = parseInt(groupSelect.value);
       if (!groupId) {
-        alert('⚠️ Select a group first!');
+        alert('⚠️ Please select a group first');
         return;
       }
 
@@ -324,55 +290,76 @@
       try {
         const res = await fetch(`/roles?groupId=${groupId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         ranks = await res.json();
 
         if (!Array.isArray(ranks) || ranks.length === 0) {
           throw new Error('No ranks found for group');
         }
 
-        // Fill revert ranks selects
+        // Fill revert selects
         currentRankRevert.innerHTML = '<option disabled selected>Select current rank</option>';
         newRankRevert.innerHTML = '<option disabled selected>Select new rank</option>';
         ranks.forEach(r => {
-          const option1 = document.createElement('option');
-          option1.value = r.id;
-          option1.textContent = `(${r.rank}) ${r.name}`;
-          currentRankRevert.appendChild(option1);
+          const opt1 = document.createElement('option');
+          opt1.value = r.id;
+          opt1.textContent = `(${r.rank}) ${r.name}`;
+          currentRankRevert.appendChild(opt1);
 
-          const option2 = option1.cloneNode(true);
-          newRankRevert.appendChild(option2);
+          const opt2 = opt1.cloneNode(true);
+          newRankRevert.appendChild(opt2);
         });
         currentRankRevert.disabled = false;
         newRankRevert.disabled = false;
         btnStartRevert.disabled = false;
 
-        // Fill manual ranks select
+        // Fill manual selects
         currentRankManual.innerHTML = '<option disabled selected>Select rank</option>';
         newRankManual.innerHTML = '<option disabled selected>Select new rank</option>';
         ranks.forEach(r => {
-          const option1 = document.createElement('option');
-          option1.value = r.id;
-          option1.textContent = `(${r.rank}) ${r.name}`;
-          currentRankManual.appendChild(option1);
+          const opt1 = document.createElement('option');
+          opt1.value = r.id;
+          opt1.textContent = `(${r.rank}) ${r.name}`;
+          currentRankManual.appendChild(opt1);
 
-          const option2 = option1.cloneNode(true);
-          newRankManual.appendChild(option2);
+          const opt2 = opt1.cloneNode(true);
+          newRankManual.appendChild(opt2);
         });
         currentRankManual.disabled = false;
         newRankManual.disabled = false;
         btnFetchUsers.disabled = false;
         userSearch.disabled = false;
 
-        btnFetchRanks.textContent = 'Fetch Ranks';
+        tabs.classList.remove('hidden');
+        revertSection.classList.remove('hidden');
+        manualSection.classList.add('hidden');
+        tabRevert.classList.add('active');
+        tabManual.classList.remove('active');
+
       } catch (err) {
         alert('❌ Failed to load ranks: ' + err.message);
-        btnFetchRanks.textContent = 'Fetch Ranks';
       } finally {
         btnFetchRanks.disabled = false;
+        btnFetchRanks.textContent = 'Fetch Ranks';
       }
     });
 
-    // Start revert button
+    // Tabs switching
+    tabRevert.addEventListener('click', () => {
+      tabRevert.classList.add('active');
+      tabManual.classList.remove('active');
+      revertSection.classList.remove('hidden');
+      manualSection.classList.add('hidden');
+    });
+
+    tabManual.addEventListener('click', () => {
+      tabManual.classList.add('active');
+      tabRevert.classList.remove('active');
+      manualSection.classList.remove('hidden');
+      revertSection.classList.add('hidden');
+    });
+
+    // Revert Abuse start
     btnStartRevert.addEventListener('click', async () => {
       const cookie = cookieInput.value.trim();
       const groupId = parseInt(groupSelect.value);
@@ -396,7 +383,7 @@
         const data = await res.json();
 
         if (data.success) {
-          logRevert.textContent = `✅ Reverted ${data.count} users\n\n${(data.logs || []).join('\n')}`;
+          logRevert.textContent = `✅ Reverted ${data.count} users\n\n` + (data.logs?.join('\n') || '');
         } else {
           logRevert.textContent = `❌ Error: ${data.error}`;
         }
@@ -407,17 +394,15 @@
       }
     });
 
-    // Fetch users button (manual mode)
+    // Manual Rank Change
+
     btnFetchUsers.addEventListener('click', async () => {
-      const cookie = cookieInput.value.trim();
       const groupId = parseInt(groupSelect.value);
       const rankId = parseInt(currentRankManual.value);
-
-      if (!cookie || !groupId || !rankId) {
-        alert('⚠️ Fill all manual user fetch fields!');
+      if (!groupId || !rankId) {
+        alert('⚠️ Select group and rank first');
         return;
       }
-
       btnFetchUsers.disabled = true;
       logManual.textContent = '⏳ Fetching users...';
       userSelect.innerHTML = '<option>Loading users...</option>';
@@ -428,75 +413,71 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         users = await res.json();
 
-        if (!Array.isArray(users) || users.length === 0) {
-          logManual.textContent = 'No users found for that rank.';
+        if (!users.length) {
+          logManual.textContent = '⚠️ No users found for this rank.';
           userSelect.innerHTML = '<option>No users found</option>';
-          userSelect.disabled = true;
           return;
         }
 
+        // Fill userSelect
         userSelect.innerHTML = '<option disabled selected>Select a user</option>';
         users.forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.userId;
-          opt.textContent = `${u.username} (ID: ${u.userId})`;
+          opt.textContent = `${u.username} (${u.userId})`;
           userSelect.appendChild(opt);
         });
         userSelect.disabled = false;
-        logManual.textContent = '✅ Users loaded.';
+        logManual.textContent = `✅ Fetched ${users.length} users.`;
+
       } catch (err) {
-        logManual.textContent = `❌ Failed to load users: ${err.message}`;
-        userSelect.innerHTML = '<option>Error loading users</option>';
-        userSelect.disabled = true;
+        logManual.textContent = `❌ Failed to fetch users: ${err.message}`;
       } finally {
         btnFetchUsers.disabled = false;
       }
     });
 
-    // Search user input filtering
+    // User search filter
     userSearch.addEventListener('input', () => {
       const term = userSearch.value.trim().toLowerCase();
       if (!term) {
-        // Show all
+        // Show all users
         userSelect.innerHTML = '<option disabled selected>Select a user</option>';
         users.forEach(u => {
           const opt = document.createElement('option');
           opt.value = u.userId;
-          opt.textContent = `${u.username} (ID: ${u.userId})`;
+          opt.textContent = `${u.username} (${u.userId})`;
           userSelect.appendChild(opt);
         });
         userSelect.disabled = false;
         return;
       }
-
-      // Filter users by username or userId (string compare)
+      // Filter users by username or id
       const filtered = users.filter(u =>
-        u.username.toLowerCase().includes(term) || u.userId.toString().includes(term)
+        u.username.toLowerCase().includes(term) ||
+        u.userId.toString().includes(term)
       );
-
+      userSelect.innerHTML = '';
       if (filtered.length === 0) {
-        userSelect.innerHTML = '<option disabled>No users found</option>';
+        userSelect.innerHTML = '<option>No matching users</option>';
         userSelect.disabled = true;
-        return;
+      } else {
+        userSelect.disabled = false;
+        filtered.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.userId;
+          opt.textContent = `${u.username} (${u.userId})`;
+          userSelect.appendChild(opt);
+        });
       }
-
-      userSelect.innerHTML = '<option disabled selected>Select a user</option>';
-      filtered.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.userId;
-        opt.textContent = `${u.username} (ID: ${u.userId})`;
-        userSelect.appendChild(opt);
-      });
-      userSelect.disabled = false;
     });
 
-    // Enable change rank button when user selected & new rank selected
-    function checkManualChangeEnable() {
+    // Enable manual change button only if user and new rank selected
+    function updateManualChangeBtn() {
       btnChangeManual.disabled = !(userSelect.value && newRankManual.value);
     }
-
-    userSelect.addEventListener('change', checkManualChangeEnable);
-    newRankManual.addEventListener('change', checkManualChangeEnable);
+    userSelect.addEventListener('change', updateManualChangeBtn);
+    newRankManual.addEventListener('change', updateManualChangeBtn);
 
     // Change rank manual button
     btnChangeManual.addEventListener('click', async () => {
@@ -532,10 +513,6 @@
         btnChangeManual.disabled = false;
       }
     });
-
-    // Initialize UI: start on revert tab, manual hidden
-    revertSection.style.display = 'block';
-    manualSection.style.display = 'none';
 
   </script>
 
