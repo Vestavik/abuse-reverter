@@ -4,13 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Roblox Rank Manager</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Custom scroll for logs and users list */
+    /* Custom scrollbar for log */
     .scrollbox {
-      max-height: 200px;
+      max-height: 180px;
       overflow-y: auto;
     }
+    /* User list hover + selected styles */
     .user-item:hover {
       background-color: #a7f3d0; /* Tailwind green-200 */
       color: #065f46; /* Tailwind green-900 */
@@ -30,12 +31,12 @@
     <!-- Tabs -->
     <div class="flex justify-center gap-4 mb-8">
       <button id="tabRevertBtn" class="px-6 py-2 rounded-xl font-medium shadow-md bg-indigo-600 text-white" type="button">Revert Abuse</button>
-      <button id="tabManualBtn" class="px-6 py-2 rounded-xl font-medium shadow-md bg-gray-100 text-gray-600 hover:bg-gray-200" type="button">Change Single User Rank</button>
+      <button id="tabManualBtn" class="px-6 py-2 rounded-xl font-medium shadow-md bg-gray-100 text-gray-600 hover:bg-gray-200" type="button">Manual Rank Change</button>
     </div>
 
     <!-- Revert Abuse Tab -->
-    <div id="tabRevert" class="">
-      <div class="space-y-6">
+    <section id="tabRevert" class="">
+      <div class="space-y-6 max-w-md mx-auto">
         <div>
           <label class="block text-gray-700 font-medium mb-2">🔑 Security Cookie</label>
           <input id="cookieRevert" type="password" placeholder=".ROBLOSECURITY cookie"
@@ -52,307 +53,304 @@
           class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
           type="button">📥 Fetch Group Ranks</button>
 
-        <div class="flex flex-col sm:flex-row sm:space-x-4">
-          <div class="flex-1 mt-4 sm:mt-0">
-            <label class="block text-gray-700 font-medium mb-2">🎯 Current Rank</label>
-            <select id="currentRankIdRevert"
-              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled>
-              <option>Select current rank</option>
-            </select>
-          </div>
-
-          <div class="flex-1 mt-4 sm:mt-0">
-            <label class="block text-gray-700 font-medium mb-2">↩️ New Rank</label>
-            <select id="newRankIdRevert"
-              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled>
-              <option>Select new rank</option>
-            </select>
-          </div>
+        <div class="flex gap-4">
+          <select id="currentRankIdRevert" class="flex-1 p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled>
+            <option>🎯 Current Rank</option>
+          </select>
+          <select id="newRankIdRevert" class="flex-1 p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled>
+            <option>↩️ New Rank</option>
+          </select>
         </div>
 
         <button id="startRevertBtn"
-          class="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-          type="button">🚀 Start Revert</button>
+          class="w-full py-3 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+          type="button" disabled>🚀 Start Revert</button>
 
-        <div id="logRevert" class="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner scrollbox whitespace-pre-wrap text-sm text-gray-700">Revert logs will appear here...</div>
+        <pre id="logRevert" class="scrollbox mt-6 p-4 bg-gray-100 rounded-xl shadow-inner text-gray-700 whitespace-pre-wrap">Logs will appear here...</pre>
       </div>
-    </div>
+    </section>
 
-    <!-- Manual Rank Change Tab -->
-    <div id="tabManual" class="hidden">
-      <div class="space-y-6">
+    <!-- Manual Rank Change Tab (hidden by default) -->
+    <section id="tabManual" class="hidden">
+      <div class="space-y-6 max-w-md mx-auto">
         <div>
           <label class="block text-gray-700 font-medium mb-2">🔑 Security Cookie</label>
           <input id="cookieManual" type="password" placeholder=".ROBLOSECURITY cookie"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400" />
+            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400" />
         </div>
 
         <div>
           <label class="block text-gray-700 font-medium mb-2">👥 Group ID</label>
           <input id="groupIdManual" type="number" placeholder="Group ID"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400" />
+            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400" />
         </div>
 
-        <button id="fetchUsersManualBtn"
-          class="w-full py-3 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-          type="button">📥 Fetch Users & Ranks</button>
+        <button id="fetchRanksManualBtn"
+          class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+          type="button">📥 Fetch Group Ranks & Users</button>
 
-        <input id="searchUserInput" type="text" placeholder="🔍 Search user by name or ID"
-          class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400" disabled />
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Search Users</label>
+          <input id="searchUserManual" type="text" placeholder="Search user by name or id"
+            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled />
+        </div>
 
-        <div id="usersList" class="scrollbox bg-gray-100 rounded-xl shadow-inner p-2 text-gray-700"></div>
+        <div id="userListManual" class="scrollbox border border-gray-200 rounded-xl p-2 max-h-48 bg-white text-gray-900"></div>
 
-        <label class="block text-gray-700 font-medium mt-4 mb-2">↩️ Select New Rank</label>
-        <select id="newRankManual"
-          class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400" disabled>
-          <option>Select new rank</option>
+        <select id="newRankManual" class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400" disabled>
+          <option>↩️ New Rank</option>
         </select>
 
-        <button id="changeRankBtn"
-          class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-          type="button">🚀 Change Rank</button>
+        <button id="startManualBtn"
+          class="w-full py-3 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+          type="button" disabled>🚀 Change Rank</button>
 
-        <div id="logManual" class="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner scrollbox whitespace-pre-wrap text-sm text-gray-700">Manual logs will appear here...</div>
+        <pre id="logManual" class="scrollbox mt-6 p-4 bg-gray-100 rounded-xl shadow-inner text-gray-700 whitespace-pre-wrap">Logs will appear here...</pre>
       </div>
-    </div>
+    </section>
+
   </div>
 
   <script>
-    // Tabs switching
+    // Tab switching
     const tabRevertBtn = document.getElementById('tabRevertBtn');
     const tabManualBtn = document.getElementById('tabManualBtn');
     const tabRevert = document.getElementById('tabRevert');
     const tabManual = document.getElementById('tabManual');
 
     tabRevertBtn.onclick = () => {
-      tabRevert.classList.remove('hidden');
-      tabManual.classList.add('hidden');
       tabRevertBtn.classList.add('bg-indigo-600', 'text-white');
       tabRevertBtn.classList.remove('bg-gray-100', 'text-gray-600');
-      tabManualBtn.classList.remove('bg-green-500', 'text-white');
       tabManualBtn.classList.add('bg-gray-100', 'text-gray-600');
-    };
-    tabManualBtn.onclick = () => {
-      tabManual.classList.remove('hidden');
-      tabRevert.classList.add('hidden');
-      tabManualBtn.classList.add('bg-green-500', 'text-white');
-      tabManualBtn.classList.remove('bg-gray-100', 'text-gray-600');
-      tabRevertBtn.classList.remove('bg-indigo-600', 'text-white');
-      tabRevertBtn.classList.add('bg-gray-100', 'text-gray-600');
+      tabManualBtn.classList.remove('bg-indigo-600', 'text-white');
+
+      tabRevert.classList.remove('hidden');
+      tabManual.classList.add('hidden');
     };
 
-    // Revert Abuse variables
-    const cookieRevertInput = document.getElementById('cookieRevert');
-    const groupIdRevertInput = document.getElementById('groupIdRevert');
+    tabManualBtn.onclick = () => {
+      tabManualBtn.classList.add('bg-indigo-600', 'text-white');
+      tabManualBtn.classList.remove('bg-gray-100', 'text-gray-600');
+      tabRevertBtn.classList.add('bg-gray-100', 'text-gray-600');
+      tabRevertBtn.classList.remove('bg-indigo-600', 'text-white');
+
+      tabManual.classList.remove('hidden');
+      tabRevert.classList.add('hidden');
+    };
+
+
+    // REVERT TAB LOGIC
+    const cookieRevert = document.getElementById('cookieRevert');
+    const groupIdRevert = document.getElementById('groupIdRevert');
     const fetchRanksRevertBtn = document.getElementById('fetchRanksRevertBtn');
-    const currentRankIdRevertSelect = document.getElementById('currentRankIdRevert');
-    const newRankIdRevertSelect = document.getElementById('newRankIdRevert');
+    const currentRankIdRevert = document.getElementById('currentRankIdRevert');
+    const newRankIdRevert = document.getElementById('newRankIdRevert');
     const startRevertBtn = document.getElementById('startRevertBtn');
     const logRevert = document.getElementById('logRevert');
 
     fetchRanksRevertBtn.onclick = async () => {
-      const groupId = groupIdRevertInput.value.trim();
+      const groupId = groupIdRevert.value.trim();
       if (!groupId) {
-        logRevert.textContent = '⚠️ Please enter a Group ID';
+        logRevert.textContent = '⚠️ Enter Group ID';
         return;
       }
       logRevert.textContent = '⏳ Fetching ranks...';
-
       try {
         const res = await fetch(`/roles?groupId=${groupId}`);
-        if (!res.ok) throw new Error('Failed fetching ranks');
-        const roles = await res.json();
-        if (!Array.isArray(roles)) throw new Error('Invalid roles data');
+        const data = await res.json();
 
-        currentRankIdRevertSelect.innerHTML = '<option value="">Select current rank</option>';
-        newRankIdRevertSelect.innerHTML = '<option value="">Select new rank</option>';
+        if (!Array.isArray(data)) {
+          logRevert.textContent = '❌ Failed to get ranks.';
+          return;
+        }
 
-        roles.forEach(r => {
-          const option1 = document.createElement('option');
-          option1.value = r.id;
-          option1.textContent = `(${r.rank}) ${r.name}`;
-          currentRankIdRevertSelect.appendChild(option1);
+        currentRankIdRevert.innerHTML = '<option disabled selected>🎯 Current Rank</option>';
+        newRankIdRevert.innerHTML = '<option disabled selected>↩️ New Rank</option>';
 
-          const option2 = option1.cloneNode(true);
-          newRankIdRevertSelect.appendChild(option2);
+        data.forEach(role => {
+          const opt1 = document.createElement('option');
+          opt1.value = role.id;
+          opt1.textContent = `(${role.rank}) ${role.name}`;
+
+          const opt2 = opt1.cloneNode(true);
+
+          currentRankIdRevert.appendChild(opt1);
+          newRankIdRevert.appendChild(opt2);
         });
 
-        currentRankIdRevertSelect.disabled = false;
-        newRankIdRevertSelect.disabled = false;
-        logRevert.textContent = '✅ Ranks loaded!';
+        currentRankIdRevert.disabled = false;
+        newRankIdRevert.disabled = false;
+        startRevertBtn.disabled = false;
+
+        logRevert.textContent = '✅ Ranks fetched!';
       } catch (e) {
-        logRevert.textContent = '💀 Error: ' + e.message;
+        logRevert.textContent = `💀 Failed: ${e.message}`;
       }
     };
 
     startRevertBtn.onclick = async () => {
-      const cookie = cookieRevertInput.value.trim();
-      const groupId = parseInt(groupIdRevertInput.value.trim());
-      const currentRankId = parseInt(currentRankIdRevertSelect.value);
-      const newRankId = parseInt(newRankIdRevertSelect.value);
+      const cookie = cookieRevert.value.trim();
+      const groupId = parseInt(groupIdRevert.value);
+      const currentRankId = parseInt(currentRankIdRevert.value);
+      const newRankId = parseInt(newRankIdRevert.value);
 
-      if (!cookie || !groupId || !currentRankId || !newRankId) {
-        logRevert.textContent = '⚠️ Fill all fields correctly.';
+      logRevert.textContent = '⏳ Reverting ranks...';
+
+      if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
+        logRevert.textContent = '⚠️ Fill all fields properly.';
         return;
       }
-
-      logRevert.textContent = '⏳ Reverting...';
 
       try {
         const res = await fetch('/revert', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ cookie, groupId, currentRankId, newRankId }),
         });
         const data = await res.json();
 
         if (data.success) {
-          logRevert.textContent = `✅ Reverted ${data.count} users\n\n${(data.logs || []).join('\n')}`;
+          logRevert.textContent = `✅ Reverted ${data.count} users\n\n${data.logs?.join('\n') || ''}`;
         } else {
-          logRevert.textContent = `❌ Failed: ${data.error}`;
+          logRevert.textContent = `❌ Error: ${data.error}`;
         }
       } catch (e) {
-        logRevert.textContent = '💥 Backend error: ' + e.message;
+        logRevert.textContent = `💥 Could not reach backend: ${e.message}`;
       }
     };
 
-    // Manual tab variables
-    const cookieManualInput = document.getElementById('cookieManual');
-    const groupIdManualInput = document.getElementById('groupIdManual');
-    const fetchUsersManualBtn = document.getElementById('fetchUsersManualBtn');
-    const searchUserInput = document.getElementById('searchUserInput');
-    const usersListDiv = document.getElementById('usersList');
-    const newRankManualSelect = document.getElementById('newRankManual');
-    const changeRankBtn = document.getElementById('changeRankBtn');
+
+    // MANUAL TAB LOGIC
+    const cookieManual = document.getElementById('cookieManual');
+    const groupIdManual = document.getElementById('groupIdManual');
+    const fetchRanksManualBtn = document.getElementById('fetchRanksManualBtn');
+    const searchUserManual = document.getElementById('searchUserManual');
+    const userListManual = document.getElementById('userListManual');
+    const newRankManual = document.getElementById('newRankManual');
+    const startManualBtn = document.getElementById('startManualBtn');
     const logManual = document.getElementById('logManual');
 
-    let manualUsers = [];
     let manualRanks = [];
-    let selectedManualUser = null;
+    let manualUsers = [];
+    let filteredUsers = [];
+    let selectedUserId = null;
 
-    fetchUsersManualBtn.onclick = async () => {
-      const cookie = cookieManualInput.value.trim();
-      const groupId = groupIdManualInput.value.trim();
-      if (!cookie || !groupId) {
-        logManual.textContent = '⚠️ Fill cookie and group ID first.';
+    fetchRanksManualBtn.onclick = async () => {
+      const groupId = groupIdManual.value.trim();
+      const cookie = cookieManual.value.trim();
+      if (!groupId) {
+        logManual.textContent = '⚠️ Enter Group ID';
         return;
       }
-      logManual.textContent = '⏳ Fetching users and ranks...';
-      usersListDiv.innerHTML = '';
-      searchUserInput.value = '';
-      selectedManualUser = null;
-      newRankManualSelect.innerHTML = '<option>Select new rank</option>';
-      newRankManualSelect.disabled = true;
-      searchUserInput.disabled = true;
-      changeRankBtn.disabled = true;
+      if (!cookie) {
+        logManual.textContent = '⚠️ Enter Security Cookie';
+        return;
+      }
+      logManual.textContent = '⏳ Fetching ranks and users...';
+      searchUserManual.disabled = true;
+      userListManual.innerHTML = '';
+      newRankManual.innerHTML = '<option>↩️ New Rank</option>';
+      newRankManual.disabled = true;
+      startManualBtn.disabled = true;
+      selectedUserId = null;
 
       try {
         // Fetch ranks
-        const ranksRes = await fetch(`/roles?groupId=${groupId}`);
-        if (!ranksRes.ok) throw new Error('Failed fetching ranks');
-        const ranksData = await ranksRes.json();
-        if (!Array.isArray(ranksData)) throw new Error('Invalid ranks data');
-        manualRanks = ranksData;
+        const rolesRes = await fetch(`/roles?groupId=${groupId}`);
+        manualRanks = await rolesRes.json();
+        if (!Array.isArray(manualRanks)) throw new Error('Failed to get ranks');
 
-        newRankManualSelect.innerHTML = '<option value="">Select new rank</option>';
+        // Fill ranks dropdown
+        newRankManual.innerHTML = '<option disabled selected>↩️ New Rank</option>';
         manualRanks.forEach(r => {
-          const option = document.createElement('option');
-          option.value = r.id;
-          option.textContent = `(${r.rank}) ${r.name}`;
-          newRankManualSelect.appendChild(option);
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = `(${r.rank}) ${r.name}`;
+          newRankManual.appendChild(opt);
         });
-        newRankManualSelect.disabled = false;
+        newRankManual.disabled = false;
 
-        // Fetch users (your backend must support this endpoint)
-        const usersRes = await fetch(`/users?cookie=${encodeURIComponent(cookie)}&groupId=${groupId}`);
-        if (!usersRes.ok) throw new Error('Failed fetching users');
-        const usersData = await usersRes.json();
-        if (!Array.isArray(usersData)) throw new Error('Invalid users data');
-        manualUsers = usersData;
-
-        if (manualUsers.length === 0) {
-          usersListDiv.textContent = 'No users found in group.';
-          searchUserInput.disabled = true;
-        } else {
-          usersListDiv.innerHTML = '';
-          manualUsers.forEach(u => {
-            const div = document.createElement('div');
-            div.textContent = `${u.username} (${u.userId})`;
-            div.className = 'user-item p-2 rounded-md';
-            div.onclick = () => selectManualUser(u, div);
-            usersListDiv.appendChild(div);
-          });
-          searchUserInput.disabled = false;
-          changeRankBtn.disabled = true;
-          logManual.textContent = `✅ Loaded ${manualUsers.length} users. Search and select a user.`;
+        // Fetch users for all ranks (here we fetch users rank by rank, might be slow for big groups)
+        manualUsers = [];
+        for (const r of manualRanks) {
+          const usersRes = await fetch(`/users?groupId=${groupId}&rankId=${r.id}`);
+          const usersData = await usersRes.json();
+          if (Array.isArray(usersData)) {
+            manualUsers.push(...usersData);
+          }
         }
+        filteredUsers = [...manualUsers];
+        renderUserList();
+
+        searchUserManual.disabled = false;
+        logManual.textContent = '✅ Users and ranks fetched!';
       } catch (e) {
-        logManual.textContent = '💀 Error: ' + e.message;
+        logManual.textContent = `💀 Failed: ${e.message}`;
       }
     };
 
-    function selectManualUser(user, divElement) {
-      selectedManualUser = user;
-      // Remove previous selection
-      [...usersListDiv.children].forEach(child => child.classList.remove('selected'));
-      divElement.classList.add('selected');
-      changeRankBtn.disabled = false;
-      logManual.textContent = `Selected user: ${user.username} (${user.userId})`;
-    }
-
-    searchUserInput.oninput = () => {
-      const val = searchUserInput.value.toLowerCase();
-      usersListDiv.innerHTML = '';
-      manualUsers.filter(u =>
-        u.username.toLowerCase().includes(val) ||
-        u.userId.toString().includes(val)
-      ).forEach(u => {
-        const div = document.createElement('div');
-        div.textContent = `${u.username} (${u.userId})`;
-        div.className = 'user-item p-2 rounded-md' + (selectedManualUser?.userId === u.userId ? ' selected' : '');
-        div.onclick = () => selectManualUser(u, div);
-        usersListDiv.appendChild(div);
+    searchUserManual.oninput = () => {
+      const term = searchUserManual.value.trim().toLowerCase();
+      filteredUsers = manualUsers.filter(u => {
+        return (
+          u.username.toLowerCase().includes(term) ||
+          u.userId.toString().includes(term)
+        );
       });
-
-      if (usersListDiv.children.length === 0) {
-        usersListDiv.textContent = 'No users found';
-      }
+      renderUserList();
     };
 
-    changeRankBtn.onclick = async () => {
-      if (!selectedManualUser) {
-        logManual.textContent = '⚠️ Select a user first.';
+    function renderUserList() {
+      userListManual.innerHTML = '';
+      if (filteredUsers.length === 0) {
+        userListManual.textContent = 'No users found.';
         return;
       }
-      const cookie = cookieManualInput.value.trim();
-      const groupId = parseInt(groupIdManualInput.value.trim());
-      const newRankId = parseInt(newRankManualSelect.value);
-      if (!cookie || !groupId || !newRankId) {
-        logManual.textContent = '⚠️ Fill all fields correctly.';
+      filteredUsers.forEach(u => {
+        const div = document.createElement('div');
+        div.textContent = `${u.username} (${u.userId}) - Rank: ${u.rank}`;
+        div.className = 'user-item p-2 rounded cursor-pointer';
+        if (u.userId === selectedUserId) {
+          div.classList.add('selected');
+        }
+        div.onclick = () => {
+          selectedUserId = u.userId;
+          renderUserList();
+          startManualBtn.disabled = false;
+        };
+        userListManual.appendChild(div);
+      });
+    }
+
+    startManualBtn.onclick = async () => {
+      const cookie = cookieManual.value.trim();
+      const groupId = parseInt(groupIdManual.value);
+      const newRank = parseInt(newRankManual.value);
+
+      if (!cookie || isNaN(groupId) || !selectedUserId || isNaN(newRank)) {
+        logManual.textContent = '⚠️ Fill all fields and select a user.';
         return;
       }
 
       logManual.textContent = '⏳ Changing user rank...';
 
       try {
-        const res = await fetch('/changeUserRank', {
+        const res = await fetch('/manual', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            cookie,
-            groupId,
-            userId: selectedManualUser.userId,
-            newRankId
-          }),
+          body: JSON.stringify({ cookie, groupId, userId: selectedUserId, newRank }),
         });
         const data = await res.json();
+
         if (data.success) {
-          logManual.textContent = `✅ Successfully changed rank for user ${selectedManualUser.username} (${selectedManualUser.userId})`;
+          logManual.textContent = `✅ Changed rank of user ${selectedUserId} successfully!`;
+          // Optionally refresh user list or update UI
+          fetchRanksManualBtn.click();
         } else {
-          logManual.textContent = `❌ Failed: ${data.error}`;
+          logManual.textContent = `❌ Error: ${data.error || 'Unknown error'}`;
         }
       } catch (e) {
-        logManual.textContent = '💥 Backend error: ' + e.message;
+        logManual.textContent = `💥 Could not contact backend: ${e.message}`;
       }
     };
   </script>
