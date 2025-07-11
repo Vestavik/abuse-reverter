@@ -5,7 +5,8 @@ module.exports = async function handler(req, res) {
   if (!cookie) return res.status(400).json({ error: 'Missing cookie' });
 
   try {
-    const userId = await noblox.setCookie(cookie); // THIS returns userId
+    await noblox.setCookie(cookie); // bare sett cookie, IKKE ta return verdi her
+    const userId = await noblox.getCurrentUserId(); // hent userId med denne funksjonen
     const groups = await noblox.getGroups(userId);
 
     const manageableGroups = groups.filter(g => g.rank >= 255);
