@@ -114,6 +114,23 @@ app.post('/manual', async (req, res) => {
 });
 
 
+app.get('/groups', async (req, res) => {
+  const cookie = req.headers['x-cookie'];
+  if (!cookie) return res.status(400).json({ error: 'Missing cookie header' });
+
+  try {
+    await noblox.setCookie(cookie);
+    const groups = await noblox.getGroups(); // Gets all groups user belongs to
+    // Filter groups where user can manage ranks (role >= 255)
+    const manageable = groups.filter(g => g.role && g.role.rank >= 255);
+    // Map to simplified output
+    const result = manageable.map(g => ({ id: g.id, name: g.name }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`🔥 Server running on http://localhost:${port}`);
 });
