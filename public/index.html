@@ -4,176 +4,183 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Roblox Rank Manager - Beyond UI Style</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-  <div id="root" class="w-full max-w-lg"></div>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+  <div id="root" class="w-full max-w-3xl"></div>
 
   <script type="text/babel">
-
     const { useState, useEffect } = React;
 
-    function RankManager() {
-      const [mode, setMode] = useState('revert'); // 'revert' or 'manual'
+    function App() {
+      const [mode, setMode] = useState('revert'); // revert or manual
 
-      // Revert abuse states
+      // --- Revert abuse state
       const [cookieRevert, setCookieRevert] = useState('');
       const [groupIdRevert, setGroupIdRevert] = useState('');
       const [ranksRevert, setRanksRevert] = useState([]);
-      const [currentRankRevert, setCurrentRankRevert] = useState('');
-      const [newRankRevert, setNewRankRevert] = useState('');
+      const [currentRankIdRevert, setCurrentRankIdRevert] = useState('');
+      const [newRankIdRevert, setNewRankIdRevert] = useState('');
       const [logRevert, setLogRevert] = useState('Revert logs will appear here...');
 
-      // Manual change states
+      // --- Manual mode state
       const [cookieManual, setCookieManual] = useState('');
       const [groupIdManual, setGroupIdManual] = useState('');
       const [ranksManual, setRanksManual] = useState([]);
       const [usersManual, setUsersManual] = useState([]);
-      const [searchTerm, setSearchTerm] = useState('');
+      const [filteredUsers, setFilteredUsers] = useState([]);
+      const [searchUser, setSearchUser] = useState('');
       const [selectedUser, setSelectedUser] = useState(null);
       const [newRankManual, setNewRankManual] = useState('');
-      const [logManual, setLogManual] = useState('Manual change logs will appear here...');
+      const [logManual, setLogManual] = useState('Manual logs will appear here...');
 
       // Fetch ranks for revert mode
       async function fetchRanksRevert() {
-        setLogRevert('⏳ Fetching ranks...');
-        setRanksRevert([]);
-        setCurrentRankRevert('');
-        setNewRankRevert('');
-        if (!groupIdRevert) {
-          setLogRevert('⚠️ Please enter a Group ID first.');
+        if (!groupIdRevert.trim()) {
+          setLogRevert('⚠️ Enter Group ID first.');
           return;
         }
+        setLogRevert('⏳ Fetching ranks...');
         try {
-          const res = await fetch(`/roles?groupId=${groupIdRevert}`);
+          const res = await fetch(`/roles?groupId=${groupIdRevert.trim()}`);
           const data = await res.json();
-          if (!Array.isArray(data)) throw new Error('Invalid data');
+          if (!Array.isArray(data)) throw new Error('Invalid ranks data');
           setRanksRevert(data);
-          setLogRevert('✅ Ranks fetched!');
+          setCurrentRankIdRevert('');
+          setNewRankIdRevert('');
+          setLogRevert('✅ Ranks loaded!');
         } catch (e) {
-          setLogRevert(`💀 Failed to fetch ranks: ${e.message}`);
+          setLogRevert('💀 Error fetching ranks: ' + e.message);
         }
       }
 
-      // Start revert action
+      // Start revert abuse
       async function startRevert() {
         setLogRevert('⏳ Reverting ranks...');
-        if (!cookieRevert || !groupIdRevert || !currentRankRevert || !newRankRevert) {
-          setLogRevert('⚠️ Fill out all fields properly!');
+        if (!cookieRevert || !groupIdRevert || !currentRankIdRevert || !newRankIdRevert) {
+          setLogRevert('⚠️ Fill all fields correctly.');
           return;
         }
         try {
           const res = await fetch('/revert', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
               cookie: cookieRevert,
-              groupId: parseInt(groupIdRevert),
-              currentRankId: parseInt(currentRankRevert),
-              newRankId: parseInt(newRankRevert),
+              groupId: Number(groupIdRevert),
+              currentRankId: Number(currentRankIdRevert),
+              newRankId: Number(newRankIdRevert)
             }),
           });
           const data = await res.json();
           if (data.success) {
-            setLogRevert(`✅ Reverted ${data.count} users!\n\n${(data.logs || []).join('\n')}`);
+            setLogRevert(`✅ Reverted ${data.count} users\n\n${(data.logs || []).join('\n')}`);
           } else {
-            setLogRevert(`❌ Error: ${data.error}`);
+            setLogRevert('❌ Failed: ' + data.error);
           }
-        } catch (e) {
-          setLogRevert(`💥 Could not contact backend: ${e.message}`);
+        } catch(e) {
+          setLogRevert('💥 Could not contact backend: ' + e.message);
         }
       }
 
-      // Fetch ranks and users for manual mode
+      // Fetch ranks & users for manual mode
       async function fetchUsersManual() {
         setLogManual('⏳ Fetching users and ranks...');
-        setRanksManual([]);
         setUsersManual([]);
+        setFilteredUsers([]);
         setSelectedUser(null);
         setNewRankManual('');
-        setSearchTerm('');
         if (!cookieManual || !groupIdManual) {
-          setLogManual('⚠️ Enter cookie and Group ID!');
+          setLogManual('⚠️ Fill in cookie and group ID first.');
           return;
         }
         try {
-          // Fetch ranks
-          const resRanks = await fetch(`/roles?groupId=${groupIdManual}`);
-          const ranksData = await resRanks.json();
-          if (!Array.isArray(ranksData)) throw new Error('Failed to fetch ranks');
+          // fetch ranks
+          const ranksRes = await fetch(`/roles?groupId=${groupIdManual.trim()}`);
+          const ranksData = await ranksRes.json();
+          if (!Array.isArray(ranksData)) throw new Error('Invalid ranks data');
           setRanksManual(ranksData);
-
-          // Fetch users
-          const resUsers = await fetch(`/users?cookie=${encodeURIComponent(cookieManual)}&groupId=${groupIdManual}`);
-          const usersData = await resUsers.json();
-          if (!Array.isArray(usersData)) throw new Error('Failed to fetch users');
+          setNewRankManual('');
+          // fetch users
+          const usersRes = await fetch(`/users?cookie=${encodeURIComponent(cookieManual)}&groupId=${groupIdManual.trim()}`);
+          const usersData = await usersRes.json();
+          if (!Array.isArray(usersData)) throw new Error('Invalid users data');
           setUsersManual(usersData);
-          setLogManual(`✅ Loaded ${usersData.length} users!`);
-        } catch (e) {
-          setLogManual(`💀 Error: ${e.message}`);
+          setFilteredUsers(usersData);
+          setLogManual(`✅ Loaded ${usersData.length} users. Search and select a user.`);
+        } catch(e) {
+          setLogManual('💀 Error: ' + e.message);
         }
       }
 
-      // Filtered users for search
-      const filteredUsers = usersManual.filter(u =>
-        u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.userId.toString().includes(searchTerm)
-      );
+      // Filter users on search input
+      useEffect(() => {
+        if (!searchUser.trim()) {
+          setFilteredUsers(usersManual);
+          return;
+        }
+        const lower = searchUser.toLowerCase();
+        setFilteredUsers(
+          usersManual.filter(u =>
+            u.username.toLowerCase().includes(lower) || u.userId.toString().includes(lower)
+          )
+        );
+      }, [searchUser, usersManual]);
 
-      // Change rank for single user
+      // Change single user rank
       async function changeSingleUserRank() {
         setLogManual('⏳ Changing user rank...');
         if (!cookieManual || !groupIdManual || !selectedUser || !newRankManual) {
-          setLogManual('⚠️ Fill all fields and select a user!');
+          setLogManual('⚠️ Fill all fields and select a user.');
           return;
         }
         try {
           const res = await fetch('/changeUserRank', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
               cookie: cookieManual,
-              groupId: parseInt(groupIdManual),
+              groupId: Number(groupIdManual),
               userId: selectedUser.userId,
-              newRankId: parseInt(newRankManual),
+              newRankId: Number(newRankManual)
             }),
           });
           const data = await res.json();
           if (data.success) {
-            setLogManual(`✅ Changed rank for ${selectedUser.username} (${selectedUser.userId})`);
+            setLogManual(`✅ Successfully changed rank for user ${selectedUser.username} (${selectedUser.userId})`);
           } else {
-            setLogManual(`❌ Failed: ${data.error}`);
+            setLogManual('❌ Failed: ' + data.error);
           }
-        } catch (e) {
-          setLogManual(`💥 Could not contact backend: ${e.message}`);
+        } catch(e) {
+          setLogManual('💥 Could not contact backend: ' + e.message);
         }
       }
 
       return (
-        <div className="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8">
-          <h1 className="text-2xl font-semibold mb-6 text-center">Roblox Rank Manager</h1>
+        <div className="bg-white rounded-2xl shadow-lg max-w-3xl w-full p-8">
+          <h1 className="text-3xl font-semibold mb-8 text-center">Roblox Rank Manager</h1>
 
           {/* Menu */}
-          <div className="flex mb-6 gap-2 justify-center">
+          <div className="flex justify-center gap-4 mb-8">
             <button
               onClick={() => setMode('revert')}
-              className={`px-5 py-2 rounded-xl font-semibold shadow-md transition ${
+              className={`px-6 py-2 rounded-xl font-medium shadow-md transition ${
                 mode === 'revert'
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  ? 'bg-indigo-600 text-white shadow-indigo-400'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Revert Abuse
             </button>
             <button
               onClick={() => setMode('manual')}
-              className={`px-5 py-2 rounded-xl font-semibold shadow-md transition ${
+              className={`px-6 py-2 rounded-xl font-medium shadow-md transition ${
                 mode === 'manual'
-                  ? 'bg-gradient-to-r from-green-400 to-teal-500 text-white'
-                  : 'bg-gray-100 text-gray-700'
+                  ? 'bg-green-500 text-white shadow-green-400'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
               Change Single User Rank
@@ -182,184 +189,165 @@
 
           {/* Revert Abuse Section */}
           {mode === 'revert' && (
-            <div className="space-y-4">
-              {/* Security Cookie Input */}
+            <div className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Security Cookie</label>
+                <label className="block text-gray-700 font-medium mb-2">🔑 Security Cookie</label>
                 <input
                   type="password"
                   placeholder=".ROBLOSECURITY cookie"
                   className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
                   value={cookieRevert}
-                  onChange={(e) => setCookieRevert(e.target.value)}
-                  autoComplete="off"
+                  onChange={e => setCookieRevert(e.target.value)}
                 />
               </div>
-              {/* Group ID Input */}
+
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Group ID</label>
+                <label className="block text-gray-700 font-medium mb-2">👥 Group ID</label>
                 <input
                   type="number"
                   placeholder="Group ID"
                   className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
                   value={groupIdRevert}
-                  onChange={(e) => setGroupIdRevert(e.target.value)}
+                  onChange={e => setGroupIdRevert(e.target.value)}
                 />
               </div>
-              {/* Fetch Ranks Button */}
+
               <button
                 onClick={fetchRanksRevert}
                 className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
               >
-                Fetch Group Ranks
+                📥 Fetch Group Ranks
               </button>
-              {/* Rank Selectors */}
+
               <div className="flex flex-col sm:flex-row sm:space-x-4">
                 <div className="flex-1 mt-4 sm:mt-0">
-                  <label className="block text-gray-700 font-medium mb-1">Current Rank</label>
+                  <label className="block text-gray-700 font-medium mb-2">🎯 Current Rank</label>
                   <select
                     className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-                    value={currentRankRevert}
-                    onChange={(e) => setCurrentRankRevert(e.target.value)}
+                    value={currentRankIdRevert}
+                    onChange={e => setCurrentRankIdRevert(e.target.value)}
                     disabled={ranksRevert.length === 0}
                   >
-                    <option value="" disabled>
-                      Select current rank
-                    </option>
-                    {ranksRevert.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        ({r.rank}) {r.name}
+                    <option value="">Select current rank</option>
+                    {ranksRevert.map(role => (
+                      <option key={role.id} value={role.id}>
+                        ({role.rank}) {role.name}
                       </option>
                     ))}
                   </select>
                 </div>
+
                 <div className="flex-1 mt-4 sm:mt-0">
-                  <label className="block text-gray-700 font-medium mb-1">New Rank</label>
+                  <label className="block text-gray-700 font-medium mb-2">↩️ New Rank</label>
                   <select
                     className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-                    value={newRankRevert}
-                    onChange={(e) => setNewRankRevert(e.target.value)}
+                    value={newRankIdRevert}
+                    onChange={e => setNewRankIdRevert(e.target.value)}
                     disabled={ranksRevert.length === 0}
                   >
-                    <option value="" disabled>
-                      Select new rank
-                    </option>
-                    {ranksRevert.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        ({r.rank}) {r.name}
+                    <option value="">Select new rank</option>
+                    {ranksRevert.map(role => (
+                      <option key={role.id} value={role.id}>
+                        ({role.rank}) {role.name}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
-              {/* Start Revert Button */}
+
               <button
                 onClick={startRevert}
                 className="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
               >
-                Start Revert
+                🚀 Start Revert
               </button>
-              {/* Log Output Section */}
-              <div className="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-32 overflow-y-auto">
+
+              <div className="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-48 overflow-y-auto">
                 <pre className="text-sm text-gray-700 whitespace-pre-wrap">{logRevert}</pre>
               </div>
             </div>
           )}
 
-          {/* Manual Change Section */}
+          {/* Manual Single User Rank Section */}
           {mode === 'manual' && (
-            <div className="space-y-4">
-              {/* Security Cookie Input */}
+            <div className="space-y-6">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Security Cookie</label>
+                <label className="block text-gray-700 font-medium mb-2">🔑 Security Cookie</label>
                 <input
                   type="password"
                   placeholder=".ROBLOSECURITY cookie"
-                  className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
+                  className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400"
                   value={cookieManual}
-                  onChange={(e) => setCookieManual(e.target.value)}
-                  autoComplete="off"
+                  onChange={e => setCookieManual(e.target.value)}
                 />
               </div>
-              {/* Group ID Input */}
+
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Group ID</label>
+                <label className="block text-gray-700 font-medium mb-2">👥 Group ID</label>
                 <input
                   type="number"
                   placeholder="Group ID"
-                  className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
+                  className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400"
                   value={groupIdManual}
-                  onChange={(e) => setGroupIdManual(e.target.value)}
+                  onChange={e => setGroupIdManual(e.target.value)}
                 />
               </div>
-              {/* Fetch Users & Ranks Button */}
+
               <button
                 onClick={fetchUsersManual}
-                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
+                className="w-full py-3 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
               >
-                Fetch Users & Ranks
+                📥 Fetch Users & Ranks
               </button>
 
-              {/* Search User */}
               <input
                 type="text"
-                placeholder="Search users by username or ID"
-                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400 mt-4"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="🔍 Search user by name or ID"
+                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400"
+                value={searchUser}
+                onChange={e => setSearchUser(e.target.value)}
                 disabled={usersManual.length === 0}
               />
 
-              {/* Users List */}
-              <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl shadow-inner mt-2">
-                {filteredUsers.length === 0 && usersManual.length > 0 && (
-                  <p className="text-gray-500 p-3 text-center">No users found</p>
-                )}
-                <ul>
-                  {filteredUsers.map((u) => (
-                    <li
-                      key={u.userId}
-                      onClick={() => setSelectedUser(u)}
-                      className={`cursor-pointer px-4 py-2 hover:bg-indigo-100 hover:text-indigo-900 ${
-                        selectedUser?.userId === u.userId ? 'bg-indigo-200 text-indigo-900 font-semibold' : 'text-gray-700'
-                      }`}
-                    >
-                      {u.username} ({u.userId})
-                    </li>
-                  ))}
-                </ul>
+              <div className="max-h-48 overflow-y-auto bg-gray-100 rounded-xl shadow-inner p-2 text-gray-700">
+                {filteredUsers.length === 0 && <div className="text-center py-6 text-gray-400">No users found</div>}
+                {filteredUsers.map(user => (
+                  <div
+                    key={user.userId}
+                    onClick={() => setSelectedUser(user)}
+                    className={`p-2 cursor-pointer rounded-md ${
+                      selectedUser?.userId === user.userId
+                        ? 'bg-green-500 text-white'
+                        : 'hover:bg-green-200 hover:text-green-900'
+                    }`}
+                  >
+                    {user.username} ({user.userId})
+                  </div>
+                ))}
               </div>
 
-              {/* Rank Select for manual */}
-              <div className="mt-4">
-                <label className="block text-gray-700 font-medium mb-1">New Rank</label>
-                <select
-                  className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-                  value={newRankManual}
-                  onChange={(e) => setNewRankManual(e.target.value)}
-                  disabled={ranksManual.length === 0}
-                >
-                  <option value="" disabled>
-                    Select new rank
+              <label className="block text-gray-700 font-medium mt-4 mb-2">↩️ Select New Rank</label>
+              <select
+                className="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-400"
+                value={newRankManual}
+                onChange={e => setNewRankManual(e.target.value)}
+                disabled={ranksManual.length === 0}
+              >
+                <option value="">Select new rank</option>
+                {ranksManual.map(role => (
+                  <option key={role.id} value={role.id}>
+                    ({role.rank}) {role.name}
                   </option>
-                  {ranksManual.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      ({r.rank}) {r.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                ))}
+              </select>
 
-              {/* Change Rank Button */}
               <button
                 onClick={changeSingleUserRank}
-                className="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-                disabled={!selectedUser || !newRankManual}
+                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
               >
-                Change User Rank
+                🚀 Change Rank
               </button>
 
-              {/* Manual Log */}
               <div className="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-32 overflow-y-auto">
                 <pre className="text-sm text-gray-700 whitespace-pre-wrap">{logManual}</pre>
               </div>
@@ -369,7 +357,7 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<RankManager />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
