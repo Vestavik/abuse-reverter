@@ -1,6 +1,8 @@
+const express = require('express');
 const noblox = require('noblox.js');
+const router = express.Router();
 
-module.exports = async function handler(req, res) {
+router.get('/users', async (req, res) => {
   try {
     const { cookie, groupId, rankId } = req.query;
     if (!cookie) return res.status(400).json({ error: 'Missing cookie' });
@@ -16,9 +18,11 @@ module.exports = async function handler(req, res) {
       rank: rankId
     }));
 
-    res.status(200).json(result);
+    res.json(result);
   } catch (err) {
     console.error('[ERROR] /api/users:', err);
     res.status(500).json({ error: err.message });
   }
-};
+});
+
+module.exports = router;
