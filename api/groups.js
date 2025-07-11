@@ -4,17 +4,17 @@ const router = express.Router();
 
 router.get('/groups', async (req, res) => {
   const cookie = req.query.cookie;
-  if (!cookie) return res.status(400).json({ error: 'Missing cookie' });
+  if (!cookie) return res.json({ error: 'Missing cookie' });
 
   try {
     await noblox.setCookie(cookie);
     const userId = await noblox.getUserIdFromCookie();
     const groups = await noblox.getGroups(userId);
-    // Filter groups where user can manage roles (rank >= some value)
     const manageableGroups = groups.filter(g => g.rank >= 255);
     res.json(manageableGroups);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error fetching groups:', err);
+    res.json({ error: 'Failed to fetch groups, check your cookie or try again.' });
   }
 });
 
