@@ -9,16 +9,15 @@ module.exports = async function handler(req, res) {
     const userId = await noblox.getUserIdFromCookie();
     const groups = await noblox.getGroups(userId);
 
-    console.log('Groups fetched:', groups);
-
     if (!Array.isArray(groups)) {
-      return res.status(200).json({ error: 'Groups data is not an array. Possibly invalid cookie or no groups found.' });
+      // groups is not an array — probably an error object or something else
+      return res.status(400).json({ error: 'Groups data is not an array, maybe invalid cookie or no groups' });
     }
 
     const manageableGroups = groups.filter(g => g.rank >= 255);
     res.status(200).json(manageableGroups);
   } catch (err) {
-    console.error('Error fetching groups:', err);
-    res.status(200).json({ error: 'Failed to fetch groups, check your cookie or try again.' });
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 };
