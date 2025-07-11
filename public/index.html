@@ -1,167 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Roblox Rank Reverter</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-lg max-w-lg w-full p-8">
-      <h1 class="text-2xl font-semibold mb-6 text-gray-800">🔁 Roblox Rank Reverter</h1>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Roblox Rank Manager</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0; padding: 2rem;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    button, select, input {
+      border-radius: 0.4rem;
+      border: none;
+      font-size: 1rem;
+      padding: 0.6rem 1rem;
+      margin: 0.5rem 0;
+      max-width: 400px;
+      width: 100%;
+    }
+    input, select {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 5px #3b82f6;
+      background: #0f172a;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .menu {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .menu button {
+      background: #1e293b;
+      color: #94a3b8;
+      flex: 1;
+      max-width: none;
+      font-weight: 600;
+      padding: 0.75rem 0;
+      border-radius: 0.5rem;
+      transition: background 0.3s, color 0.3s;
+    }
+    .menu button.active {
+      background: #3b82f6;
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 0 10px #11182788;
+    }
+    .log {
+      margin-top: 1.5rem;
+      white-space: pre-wrap;
+      background: #334155;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+      color: #d1d5db;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .flex-row > * {
+      flex: 1;
+      min-width: 140px;
+    }
+    .user-list {
+      margin-top: 1rem;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #0f172a;
+      border-radius: 0.5rem;
+      border: 1px solid #334155;
+    }
+    .user-item {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid #334155;
+      cursor: pointer;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .user-item:hover {
+      background: #3b82f6;
+      color: white;
+    }
+    .user-item:last-child {
+      border-bottom: none;
+    }
+    .user-selected {
+      background: #2563eb;
+      color: white;
+    }
+    .inline-btn {
+      background: #10b981;
+      padding: 0.3rem 0.8rem;
+      border-radius: 0.4rem;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .inline-btn:hover {
+      background: #059669;
+    }
+  </style>
+</head>
+<body>
 
-      <div class="space-y-4">
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">🔑 Security Cookie</label>
-          <input
-            id="cookie"
-            type="password"
-            placeholder=".ROBLOSECURITY cookie"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+  <h1>🔁 Roblox Rank Manager</h1>
 
-        <div>
-          <label class="block text-gray-700 font-medium mb-1">👥 Group ID</label>
-          <input
-            id="groupId"
-            type="number"
-            placeholder="Group ID"
-            class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+  <div class="menu">
+    <button id="menuRevert" class="active">Revert Abuse</button>
+    <button id="menuManual">Change Single User Rank</button>
+  </div>
 
-        <button
-          onclick="fetchRoles()"
-          class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-        >
-          📥 Fetch Group Ranks
-        </button>
+  <!-- Revert Abuse Section -->
+  <div id="revertSection" class="container">
+    <label for="cookieRevert">🔑 Security Cookie</label>
+    <input id="cookieRevert" type="password" placeholder=".ROBLOSECURITY cookie" autocomplete="off" />
 
-        <div class="flex flex-col sm:flex-row sm:space-x-4">
-          <div class="flex-1 mt-4 sm:mt-0">
-            <label class="block text-gray-700 font-medium mb-1">🎯 Current Rank</label>
-            <select
-              id="currentRankId"
-              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-            >
-              <option disabled selected>Pick current rank</option>
-            </select>
-          </div>
+    <label for="groupIdRevert">👥 Group ID</label>
+    <input id="groupIdRevert" type="number" placeholder="Group ID" />
 
-          <div class="flex-1 mt-4 sm:mt-0">
-            <label class="block text-gray-700 font-medium mb-1">↩️ New Rank</label>
-            <select
-              id="newRankId"
-              class="w-full p-3 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400"
-            >
-              <option disabled selected>Pick new rank</option>
-            </select>
-          </div>
-        </div>
+    <button onclick="fetchRolesRevert()">📥 Fetch Group Ranks</button>
 
-        <button
-          onclick="startRevert()"
-          class="w-full py-3 mt-4 bg-gradient-to-r from-green-400 to-teal-500 text-white font-medium rounded-xl shadow-md hover:opacity-90 transition"
-        >
-          🚀 Start Revert
-        </button>
+    <div class="flex-row" style="margin-top: 1rem;">
+      <div>
+        <label for="currentRankIdRevert">🎯 Current Rank</label>
+        <select id="currentRankIdRevert" disabled>
+          <option>Select current rank</option>
+        </select>
       </div>
-
-      <div
-        id="log"
-        class="mt-6 p-4 bg-gray-100 rounded-xl shadow-inner h-32 overflow-y-auto text-sm text-gray-700 whitespace-pre-wrap"
-      >
-        Logs will appear here...
+      <div>
+        <label for="newRankIdRevert">↩️ New Rank</label>
+        <select id="newRankIdRevert" disabled>
+          <option>Select new rank</option>
+        </select>
       </div>
     </div>
 
-    <script>
-      async function fetchRoles() {
-        const groupId = document.getElementById('groupId').value.trim();
-        const log = document.getElementById('log');
-        log.textContent = '⏳ Getting ranks...';
+    <button onclick="startRevert()" style="margin-top: 1rem;">🚀 Start Revert</button>
 
-        if (!groupId) {
-          log.textContent = '⚠️ Please enter a group ID first!';
-          return;
-        }
+    <div id="logRevert" class="log">Logs will appear here...</div>
+  </div>
 
-        try {
-          const res = await fetch(`/api/roles?groupId=${groupId}`);
-          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  <!-- Manual Rank Change Section -->
+  <div id="manualSection" class="container" style="display:none;">
+    <label for="cookieManual">🔑 Security Cookie</label>
+    <input id="cookieManual" type="password" placeholder=".ROBLOSECURITY cookie" autocomplete="off" />
 
-          const data = await res.json();
+    <label for="groupIdManual">👥 Group ID</label>
+    <input id="groupIdManual" type="number" placeholder="Group ID" />
 
-          if (!Array.isArray(data)) {
-            log.textContent = '❌ Failed to get roles: Invalid data format';
-            return;
-          }
+    <button onclick="fetchUsers()" style="margin-bottom: 1rem;">📥 Fetch Users</button>
 
-          const currentSelect = document.getElementById('currentRankId');
-          const newSelect = document.getElementById('newRankId');
+    <input
+      id="searchUserInput"
+      type="text"
+      placeholder="🔍 Search user by name or ID"
+      style="padding:0.5rem 1rem; width:100%; border-radius: 0.4rem; border:none; margin-bottom:1rem; background:#1e293b; color:#f8fafc; border:1px solid #334155;"
+      disabled
+    />
 
-          currentSelect.innerHTML = '<option disabled selected>🎯 Pick current rank</option>';
-          newSelect.innerHTML = '<option disabled selected>↩️ Pick new rank</option>';
+    <div id="userList" class="user-list"></div>
 
-          for (const role of data) {
-            const option1 = document.createElement('option');
-            option1.value = role.id;
-            option1.textContent = `(${role.rank}) ${role.name}`;
-            const option2 = option1.cloneNode(true);
+    <label for="newRankManual">↩️ Select new rank</label>
+    <select id="newRankManual" disabled>
+      <option>Select new rank</option>
+    </select>
 
-            currentSelect.appendChild(option1);
-            newSelect.appendChild(option2);
-          }
+    <button onclick="changeSingleUserRank()" style="margin-top: 1rem;">🚀 Change Rank</button>
 
-          log.textContent = '✅ Roles loaded successfully!';
-        } catch (err) {
-          log.textContent = `💀 Failed to get: ${err.message}`;
-        }
+    <div id="logManual" class="log">Logs will appear here...</div>
+  </div>
+
+<script>
+  // Menu toggle
+  const menuRevert = document.getElementById('menuRevert');
+  const menuManual = document.getElementById('menuManual');
+  const revertSection = document.getElementById('revertSection');
+  const manualSection = document.getElementById('manualSection');
+
+  menuRevert.onclick = () => {
+    menuRevert.classList.add('active');
+    menuManual.classList.remove('active');
+    revertSection.style.display = 'block';
+    manualSection.style.display = 'none';
+  };
+  menuManual.onclick = () => {
+    menuManual.classList.add('active');
+    menuRevert.classList.remove('active');
+    manualSection.style.display = 'block';
+    revertSection.style.display = 'none';
+  };
+
+  // Revert abuse code
+
+  async function fetchRolesRevert() {
+    const groupId = document.getElementById('groupIdRevert').value.trim();
+    const log = document.getElementById('logRevert');
+    const currentSelect = document.getElementById('currentRankIdRevert');
+    const newSelect = document.getElementById('newRankIdRevert');
+
+    log.textContent = '⏳ Fetching ranks...';
+    currentSelect.innerHTML = '<option>Select current rank</option>';
+    newSelect.innerHTML = '<option>Select new rank</option>';
+    currentSelect.disabled = true;
+    newSelect.disabled = true;
+
+    if (!groupId) {
+      log.textContent = '⚠️ Enter Group ID first.';
+      return;
+    }
+
+    try {
+      const res = await fetch(`/roles?groupId=${groupId}`);
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        log.textContent = '❌ Failed to fetch ranks.';
+        return;
       }
-
-      async function startRevert() {
-        const log = document.getElementById('log');
-        const cookie = document.getElementById('cookie').value.trim();
-        const groupId = parseInt(document.getElementById('groupId').value);
-        const currentRankId = parseInt(document.getElementById('currentRankId').value);
-        const newRankId = parseInt(document.getElementById('newRankId').value);
-
-        if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
-          log.textContent = '⚠️ Please fill out everything correctly before starting.';
-          return;
-        }
-
-        log.textContent = '⏳ Reverting ranks... Please wait.';
-
-        try {
-          const res = await fetch('/api/revert', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cookie, groupId, currentRankId, newRankId }),
-          });
-
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Unknown error');
-          }
-
-          const data = await res.json();
-
-          if (data.success) {
-            log.textContent =
-              `✅ Reverted ${data.count} users successfully!\n\n` +
-              (data.logs?.join('\n') || '');
-          } else {
-            log.textContent = `❌ Failed: ${data.error}`;
-          }
-        } catch (err) {
-          log.textContent = `💥 Could not contact backend: ${err.message}`;
-        }
+      for (const role of data) {
+        const opt1 = document.createElement('option');
+        opt1.value = role.id;
+        opt1.textContent = `(${role.rank}) ${role.name}`;
+        const opt2 = opt1.cloneNode(true);
+        currentSelect.appendChild(opt1);
+        newSelect.appendChild(opt2);
       }
-    </script>
-  </body>
+      currentSelect.disabled = false;
+      newSelect.disabled = false;
+      log.textContent = '✅ Ranks loaded!';
+    } catch (e) {
+      log.textContent = '💀 Error: ' + e.message;
+    }
+  }
+
+  async function startRevert() {
+    const log = document.getElementById('logRevert');
+    const cookie = document.getElementById('cookieRevert').value.trim();
+    const groupId = parseInt(document.getElementById('groupIdRevert').value);
+    const currentRankId = parseInt(document.getElementById('currentRankIdRevert').value);
+    const newRankId = parseInt(document.getElementById('newRankIdRevert').value);
+
+    log.textContent = '⏳ Reverting ranks...';
+
+    if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
+      log.textContent = '⚠️ Fill out everything correctly.';
+      return;
+    }
+
+    try {
+      const res = await fetch('/revert', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cookie, groupId, currentRankId, newRankId}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        log.textContent = `✅ Reverted ${data.count} users\n\n${(data.logs||[]).join('\n')}`;
+      } else {
+        log.textContent = `❌ Failed: ${data.error}`;
+      }
+    } catch (e) {
+      log.textContent = '💥 Could not contact backend: ' + e.message;
+    }
+  }
+
+  // Manual change single user rank
+
+  let allUsers = [];
+  let filteredUsers = [];
+  let selectedUserId = null;
+  let ranksManual = [];
+
+  const userListEl = document.getElementById('userList');
+  const searchUserInput = document.getElementById('searchUserInput');
+  const newRankManual = document.getElementById('newRankManual');
+  const logManual = document.getElementById('logManual');
+
+  async function fetchUsers() {
+    const cookie = document.getElementById('cookieManual').value.trim();
+    const groupId = document.getElementById('groupIdManual').value.trim();
+
+    logManual.textContent = '⏳ Fetching users...';
+    userListEl.innerHTML = '';
+    newRankManual.innerHTML = '<option>Select new rank</option>';
+    newRankManual.disabled = true;
+    searchUserInput.value = '';
+    searchUserInput.disabled = true;
+    selectedUserId = null;
+    ranksManual = [];
+
+    if (!cookie || !groupId) {
+      logManual.textContent = '⚠️ Fill in cookie and group ID first.';
+      return;
+    }
+
+    try {
+      // fetch ranks first
+      const rankRes = await fetch(`/roles?groupId=${groupId}`);
+      const ranksData = await rankRes.json();
+      if (!Array.isArray(ranksData)) {
+        logManual.textContent = '❌ Failed to fetch ranks.';
+        return;
+      }
+      ranksManual = ranksData;
+      newRankManual.innerHTML = '<option disabled selected>Select new rank</option>';
+      ranksData.forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role.id;
+        opt.textContent = `(${role.rank}) ${role.name}`;
+        newRankManual.appendChild(opt);
+      });
+      newRankManual.disabled = false;
+
+      // fetch users
+      const usersRes = await fetch(`/users?cookie=${encodeURIComponent(cookie)}&groupId=${groupId}`);
+      const usersData = await usersRes.json();
+      if (!Array.isArray(usersData)) {
+        logManual.textContent = '❌ Failed to fetch users.';
+        return;
+      }
+      allUsers = usersData;
+      filteredUsers = allUsers;
+      renderUserList();
+
+      searchUserInput.disabled = false;
+      logManual.textContent = `✅ Loaded ${allUsers.length} users. Select a user to change rank.`;
+    } catch (e) {
+      logManual.textContent = '💀 Error: ' + e.message;
+    }
+  }
+
+  function renderUserList() {
+    userListEl.innerHTML = '';
+    if (filteredUsers.length === 0) {
+      userListEl.textContent = 'No users found.';
+      return;
+    }
+    filteredUsers.forEach(user => {
+      const div = document.createElement('div');
+      div.className = 'user-item' + (user.userId === selectedUserId ? ' user-selected' : '');
+      div.textContent = `${user.username} (${user.userId})`;
+      div.onclick = () => {
+        selectedUserId = user.userId;
+        renderUserList();
+      };
+      userListEl.appendChild(div);
+    });
+  }
+
+  searchUserInput.addEventListener('input', () => {
+    const val = searchUserInput.value.toLowerCase();
+    filteredUsers = allUsers.filter(u =>
+      u.username.toLowerCase().includes(val) ||
+      u.userId.toString().includes(val)
+    );
+    renderUserList();
+  });
+
+  async function changeSingleUserRank() {
+    logManual.textContent = '⏳ Changing user rank...';
+
+    const cookie = document.getElementById('cookieManual').value.trim();
+    const groupId = parseInt(document.getElementById('groupIdManual').value);
+    const newRankIdVal = parseInt(newRankManual.value);
+
+    if (!cookie || isNaN(groupId) || !selectedUserId || isNaN(newRankIdVal)) {
+      logManual.textContent = '⚠️ Fill all fields and select a user.';
+      return;
+    }
+
+    try {
+      const res = await fetch('/changeUserRank', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cookie, groupId, userId: selectedUserId, newRankId: newRankIdVal}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        logManual.textContent = `✅ Successfully changed rank for user ${selectedUserId}`;
+      } else {
+        logManual.textContent = `❌ Failed: ${data.error}`;
+      }
+    } catch (e) {
+      logManual.textContent = '💥 Could not contact backend: ' + e.message;
+    }
+  }
+</script>
+
+</body>
 </html>
