@@ -1,12 +1,14 @@
 const noblox = require('noblox.js');
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).end();
-  try {
-    const { cookie, groupId, currentRankId, newRankId } = req.body;
-    if (!cookie || !groupId || !currentRankId || !newRankId)
-      return res.status(400).json({ error: 'Missing data' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  const { cookie, groupId, currentRankId, newRankId } = req.body;
+  if (!cookie || !groupId || !currentRankId || !newRankId)
+    return res.status(400).json({ error: 'Missing data' });
 
+  try {
     await noblox.setCookie(cookie);
     const users = await noblox.getPlayers(groupId, currentRankId);
     let success = 0;
