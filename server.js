@@ -1,12 +1,12 @@
 const express = require('express');
 const noblox = require('noblox.js');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 app.use(express.json());
 
-// Endpoint to get groups manageable by the cookie user
+// GET /groups - hent grupper du kan styre (bruk cookie i header)
 app.get('/groups', async (req, res) => {
   const cookie = req.headers['x-cookie'];
   if (!cookie) return res.status(400).json({ error: 'Missing cookie header' });
@@ -14,7 +14,7 @@ app.get('/groups', async (req, res) => {
   try {
     await noblox.setCookie(cookie);
     const groups = await noblox.getGroups();
-    // Only groups where user has rank >= 255 (can manage ranks)
+    // Filtrer grupper hvor rank >= 255 (kan styre)
     const manageable = groups.filter(g => g.role && g.role.rank >= 255);
     const result = manageable.map(g => ({ id: g.id, name: g.name }));
     res.json(result);
@@ -23,12 +23,15 @@ app.get('/groups', async (req, res) => {
   }
 });
 
-// Endpoint to get roles for a given group
+// GET /roles - hent roller i en gruppe (bruk cookie i header)
 app.get('/roles', async (req, res) => {
+  const cookie = req.headers['x-cookie'];
   const groupId = parseInt(req.query.groupId);
+  if (!cookie) return res.status(400).json({ error: 'Missing cookie header' });
   if (!groupId) return res.status(400).json({ error: 'Missing groupId' });
 
   try {
+    await noblox.setCookie(cookie);
     const roles = await noblox.getRoles(groupId);
     res.json(roles);
   } catch (err) {
@@ -36,13 +39,16 @@ app.get('/roles', async (req, res) => {
   }
 });
 
-// Endpoint to get users with a specific rank in a group (for manual rank change)
+// GET /users - hent brukere med spesifikk rank i gruppe (bruk cookie i header)
 app.get('/users', async (req, res) => {
+  const cookie = req.headers['x-cookie'];
   const groupId = parseInt(req.query.groupId);
   const rankId = parseInt(req.query.rankId);
+  if (!cookie) return res.status(400).json({ error: 'Missing cookie header' });
   if (!groupId || !rankId) return res.status(400).json({ error: 'Missing groupId or rankId' });
 
   try {
+    await noblox.setCookie(cookie);
     const users = await noblox.getPlayers(groupId, rankId);
     const result = users.map(u => ({ username: u.username, userId: u.userId }));
     res.json(result);
@@ -51,7 +57,7 @@ app.get('/users', async (req, res) => {
   }
 });
 
-// Revert abuse endpoint (mass rank change)
+// POST /revert - revert abuse (masse rank-endring) med cookie i body
 app.post('/revert', async (req, res) => {
   const { cookie, groupId, currentRankId, newRankId } = req.body;
   if (!cookie || !groupId || !currentRankId || !newRankId)
@@ -79,7 +85,7 @@ app.post('/revert', async (req, res) => {
   }
 });
 
-// Manual rank change for one user
+// POST /manual - manuelt rank-endring for én bruker med cookie i body
 app.post('/manual', async (req, res) => {
   const { cookie, groupId, userId, newRank } = req.body;
   if (!cookie || !groupId || !userId || !newRank) return res.status(400).json({ error: 'Missing data' });
@@ -94,5 +100,5 @@ app.post('/manual', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🔥 Server running at http://localhost:${port}`);
+  console.log(`🔥 Server running on port ${port}`);
 });
