@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roblox Rank Reverter</title>
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input, select {
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border-radius: 0.4rem;
+      border: none;
+      width: 100%;
+      max-width: 400px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .log {
+      margin-top: 2rem;
+      white-space: pre-wrap;
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      max-width: 600px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔁 Roblox Rank Reverter</h1>
+
+  <input id="cookie" type="text" placeholder="🔑 Security Cookie">
+  <input id="groupId" type="number" placeholder="👥 Group ID">
+  <button onclick="fetchRoles()">📥 Hent roller</button>
+
+  <select id="currentRankId" style="display:none;"></select>
+  <select id="newRankId" style="display:none;"></select>
+
+  <button onclick="startRevert()">🚀 Start Revert</button>
+
+  <div id="log" class="log"></div>
+
+  <script>
+    async function fetchRoles() {
+      const groupId = document.getElementById('groupId').value.trim();
+      const log = document.getElementById('log');
+      log.textContent = '⏳ Henter roller...';
+
+      try {
+        const res = await fetch(`/roles?groupId=${groupId}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+          log.textContent = '❌ Klarte ikke hente roller.';
+          return;
+        }
+
+        const currentSelect = document.getElementById('currentRankId');
+        const newSelect = document.getElementById('newRankId');
+
+        currentSelect.style.display = 'block';
+        newSelect.style.display = 'block';
+        currentSelect.innerHTML = '<option disabled selected>🎯 Velg nåværende rank</option>';
+        newSelect.innerHTML = '<option disabled selected>↩️ Velg ny rank</option>';
+
+        for (const role of data) {
+          const opt1 = document.createElement('option');
+          opt1.value = role.id;
+          opt1.textContent = `(${role.rank}) ${role.name}`;
+          const opt2 = opt1.cloneNode(true);
+          currentSelect.appendChild(opt1);
+          newSelect.appendChild(opt2);
+        }
+
+        log.textContent = '✅ Roller hentet!';
+      } catch (err) {
+        log.textContent = `💀 Klarte ikke hente: ${err.message}`;
+      }
+    }
+
+    async function startRevert() {
+      const log = document.getElementById('log');
+      const cookie = document.getElementById('cookie').value.trim();
+      const groupId = parseInt(document.getElementById('groupId').value);
+      const currentRankId = parseInt(document.getElementById('currentRankId').value);
+      const newRankId = parseInt(document.getElementById('newRankId').value);
+
+      log.textContent = '⏳ Reverterer...';
+
+      if (!cookie || isNaN(groupId) || isNaN(currentRankId) || isNaN(newRankId)) {
+        log.textContent = '⚠️ Fyll ut alt riktig først.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/revert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookie, groupId, currentRankId, newRankId })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          log.textContent = `✅ Revertert ${data.count} brukere\n\n` + (data.logs?.join('\n') || '');
+        } else {
+          log.textContent = `❌ Feil: ${data.error}`;
+        }
+      } catch (err) {
+        log.textContent = `💥 Klarte ikke kontakte backend: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
